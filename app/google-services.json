@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1095731176076",
+    "project_id": "mka-01-pedometer",
+    "storage_bucket": "mka-01-pedometer.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1095731176076:android:c78e96f86d9f92be4291a9",
+        "android_client_info": {
+          "package_name": "com.pedometer.steptracker.runwalk.dailytrack"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA-ZwZgFpsYEEh7Dmak2lTGthZ2QZFng0w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

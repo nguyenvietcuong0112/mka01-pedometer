@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="DayButton">
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/day_button_background"
+        android:gravity="center"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+    </style>
+
+    <style name="ReportItem">
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_columnWeight="1"
+        android:layout_margin="8dp"
+        android:orientation="vertical"
+        android:gravity="center"
+    </style>
+
+    <style name="AppTheme.AdAttribution">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_gravity">left</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:text">Ad</item>
+        <item name="android:background">#FFCC66</item>
+        <item name="android:width">20dp</item>
+        <item name="android:height">20dp</item>
+    </style>
+</resources>

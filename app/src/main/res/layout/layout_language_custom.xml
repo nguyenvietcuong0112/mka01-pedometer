@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="12dp">
+
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <include
+                    android:id="@+id/languageES"
+                    layout="@layout/item_not_collapse"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <include
+                    android:id="@+id/languageEnglishCollapse"
+                    layout="@layout/item_collapse"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/_12sdp"
+                    android:layout_marginBottom="@dimen/_6sdp" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rcvLanguageCollap1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="true"
+                    android:orientation="vertical"
+                    android:paddingStart="@dimen/_18sdp"
+                    android:visibility="gone"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    tools:itemCount="4"
+                    tools:listitem="@layout/item_custom_language" />
+
+                <include
+                    android:id="@+id/languageFR"
+                    layout="@layout/item_not_collapse"
+                    android:layout_width="match_parent"
+                    android:layout_marginTop="@dimen/_6sdp"
+                    android:layout_height="wrap_content" />
+
+                <include
+                    android:id="@+id/languageHindi"
+                    layout="@layout/item_collapse"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/_12sdp"
+                    android:layout_marginBottom="@dimen/_6sdp" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rcvLanguageCollap2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="true"
+                    android:orientation="vertical"
+                    android:paddingStart="@dimen/_18sdp"
+                    android:visibility="gone"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    tools:itemCount="4"
+                    tools:listitem="@layout/item_custom_language" />
+
+                <include
+                    android:id="@+id/languagePor"
+                    layout="@layout/item_collapse"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/_6sdp"
+                    android:layout_marginBottom="@dimen/_6sdp" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rcvLanguageCollap3"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="true"
+                    android:orientation="vertical"
+                    android:paddingStart="@dimen/_18sdp"
+                    android:visibility="gone"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    tools:itemCount="4"
+                    tools:listitem="@layout/item_custom_language" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rcvLanguage4"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="true"
+                    android:orientation="vertical"
+
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    tools:itemCount="4"
+                    tools:listitem="@layout/item_custom_language" />
+            </LinearLayout>
+
+        </androidx.core.widget.NestedScrollView>
+
+
+    </RelativeLayout>
+</layout>

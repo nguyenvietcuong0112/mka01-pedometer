@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:background="#FFFFFF"
+    android:layout_height="match_parent">
+
+
+    <TextView
+        android:id="@+id/interest"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/montserrat_bold"
+        android:layout_marginStart="@dimen/_10sdp"
+        android:paddingEnd="@dimen/_70sdp"
+        android:layout_marginTop="@dimen/_20sdp"
+        android:textSize="@dimen/_16sdp"
+        android:textColor="#333B86"
+        android:text="Interest"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        />
+
+    <ImageView
+        android:id="@+id/btnContinue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/button_state_color"
+        android:clickable="false"
+        android:layout_marginEnd="@dimen/_10sdp"
+        android:layout_marginTop="@dimen/_22sdp"
+        android:textColor="@color/white"
+        app:layout_constraintTop_toTopOf="parent"
+        android:src="@drawable/ic_checked_interest"
+        app:layout_constraintEnd_toEndOf="parent"
+       />
+
+    <CheckBox
+        android:id="@+id/cbTrackExpenses"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/_10sdp"
+        android:layout_marginTop="@dimen/_10sdp"
+        android:background="@drawable/interest_selector"
+        android:button="@null"
+        android:padding="12dp"
+        android:fontFamily="@font/montserrat_medium"
+        android:text="Improve fitness &amp; endurance"
+        android:textColor="@color/interest_text_color"
+        app:layout_constraintTop_toBottomOf="@id/interest"/>
+
+    <CheckBox
+        android:id="@+id/cbMonitorSavings"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/_10sdp"
+        android:layout_marginTop="@dimen/_10sdp"
+        android:background="@drawable/interest_selector"
+        android:button="@null"
+        android:padding="12dp"
+        android:fontFamily="@font/montserrat_medium"
+        android:text="Lose weight &amp; burn calories"
+        android:textColor="@color/interest_text_color"
+        app:layout_constraintTop_toBottomOf="@id/cbTrackExpenses"/>
+
+    <CheckBox
+        android:id="@+id/cbAnalyzeSpending"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/_10sdp"
+        android:layout_marginTop="@dimen/_10sdp"
+        android:background="@drawable/interest_selector"
+        android:button="@null"
+        android:padding="12dp"
+        android:fontFamily="@font/montserrat_medium"
+        android:text="Stay healthy &amp; energized"
+        android:textColor="@color/interest_text_color"
+        app:layout_constraintTop_toBottomOf="@id/cbMonitorSavings"/>
+
+    <CheckBox
+        android:id="@+id/cbOptimizeSpending"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/_10sdp"
+        android:layout_marginTop="@dimen/_10sdp"
+        android:background="@drawable/interest_selector"
+        android:button="@null"
+        android:padding="12dp"
+        android:fontFamily="@font/montserrat_medium"
+        android:text="Track daily movement"
+        android:textColor="@color/interest_text_color"
+        app:layout_constraintTop_toBottomOf="@id/cbAnalyzeSpending"/>
+
+    <CheckBox
+        android:id="@+id/cbPlanInvestments"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/_10sdp"
+        android:layout_marginTop="@dimen/_10sdp"
+        android:background="@drawable/interest_selector"
+        android:button="@null"
+        android:padding="12dp"
+        android:fontFamily="@font/montserrat_medium"
+        android:text="Build a walking habit"
+        android:textColor="@color/interest_text_color"
+        app:layout_constraintTop_toBottomOf="@id/cbOptimizeSpending"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/montserrat_regular"
+        android:layout_marginStart="@dimen/_10sdp"
+        android:paddingEnd="@dimen/_70sdp"
+        android:layout_marginTop="@dimen/_10sdp"
+        android:textSize="@dimen/_12sdp"
+        android:textColor="#5A5A5A"
+        android:text="Please select at least 2 options to continue."
+        app:layout_constraintTop_toBottomOf="@id/cbPlanInvestments"/>
+
+
+
+    <androidx.core.widget.ContentLoadingProgressBar
+        android:id="@+id/btn_next_loading"
+        style="@style/Widget.AppCompat.ProgressBar"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:layout_marginEnd="@dimen/_10sdp"
+        android:layout_marginTop="@dimen/_22sdp"
+        android:layout_gravity="center"
+        android:indeterminate="true"
+        android:indeterminateTint="#1590EA"
+        android:visibility="visible"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <FrameLayout
+        android:id="@+id/fr_ads"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_ads_native"
+        android:paddingBottom="@dimen/_5sdp"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <RelativeLayout
+            android:id="@+id/shimmer_native_language"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <include layout="@layout/ads_shimmer_native_language" />
+        </RelativeLayout>
+    </FrameLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
