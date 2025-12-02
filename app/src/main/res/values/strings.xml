@@ -14,6 +14,18 @@
     <string name="monthly_kcal_format">%.2f</string>
     <string name="monthly_time_format">%s</string>
     <string name="monthly_distance_format">%.2f</string>
+    <string name="activity_title">Activity</string>
+    <string name="start_tracking">Start</string>
+    <string name="pause_tracking">Pause</string>
+    <string name="resume_tracking">Resume</string>
+    <string name="finish_tracking">Finish</string>
+    <string name="recent_activity">Recent Activity</string>
+    <string name="view_more">View more</string>
+    <string name="recent_activity_placeholder_title">Walking</string>
+    <string name="recent_activity_placeholder_time">–</string>
+    <string name="recent_activity_empty">No activity yet. Tap Start to begin.</string>
+    <string name="activity_permission_required">Ứng dụng cần quyền vị trí để theo dõi quãng đường.</string>
+    <string name="activity_tracking_error">Không thể bắt đầu theo dõi. Vui lòng thử lại.</string>
     <string-array name="statistic_options">
         <item>Steps</item>
         <item>Distance</item>
