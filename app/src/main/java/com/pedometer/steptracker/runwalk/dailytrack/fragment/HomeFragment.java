@@ -1,6 +1,7 @@
 package com.pedometer.steptracker.runwalk.dailytrack.fragment;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -11,6 +12,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -45,9 +47,14 @@ import com.pedometer.steptracker.runwalk.dailytrack.model.DatabaseHelper;
 import com.pedometer.steptracker.runwalk.dailytrack.utils.CustomBottomSheetDialogExitFragment;
 import com.pedometer.steptracker.runwalk.dailytrack.utils.SharePreferenceUtils;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
+/**
+ * HomeFragment - updated: prefer TYPE_STEP_COUNTER, fallback accelerometer,
+ * baseline stored per-day to avoid jumps, reset at finish.
+ */
 public class HomeFragment extends Fragment {
 
     private static final int PERMISSION_REQUEST_ACTIVITY_RECOGNITION = 45;
@@ -70,6 +77,7 @@ public class HomeFragment extends Fragment {
         }
     };
 
+    // UI
     private TextView stepCountText, targetText, remainingText;
     private TextView kcalText, timeText, distanceText;
     private LinearLayout startStopButton;
@@ -79,7 +87,14 @@ public class HomeFragment extends Fragment {
     private boolean isTracking = false;
     private SensorManager sensorManager;
     private Sensor accelerometer;
-    private int stepCount = 0;
+    private Sensor stepCounterSensor; // TYPE_STEP_COUNTER or STEP_DETECTOR
+    private boolean stepSensorIsCounter = false; // true: TYPE_STEP_COUNTER
+    private boolean stepSensorIsDetector = false; // true: TYPE_STEP_DETECTOR
+
+    // Step bookkeeping
+    private int stepCount = 0; // value shown on UI (today/session)
+    private int detectorAccumulatedSteps = 0; // for STEP_DETECTOR/accelerometer fallback
+    private int stepGoal;
     private long startTime;
     private long elapsedTime = 0;
     private DatabaseHelper databaseHelper;
@@ -94,11 +109,20 @@ public class HomeFragment extends Fragment {
     private long lastStepTime = 0;
     private float[] lastValues = new float[PEAK_COUNT];
     private int valueIndex = 0;
-    private int stepGoal;
+
+    // Ads & utils
     private FrameLayout frAdsHomeTop;
     private FrameLayout frAdsCollap;
     private SharePreferenceUtils sharePreferenceUtils;
     private View rootView;
+
+    // Step counter cumulative handling
+    private int totalSensorSteps = 0; // cumulative from sensor event (TYPE_STEP_COUNTER)
+    private int stepsBaselineForToday = 0; // baseline cumulative value when the day/session started
+    private boolean waitingForFirstCounterEvent = false;
+
+    private static final String PREFS_BASELINE = "pedometer_baselines"; // store baseline per date
+    private static final String PREFS_TODAY_DATA = "pedometer_today_data"; // optional local storage
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -114,9 +138,9 @@ public class HomeFragment extends Fragment {
         sharePreferenceUtils.incrementCounter();
 
         initializeViews();
-        setupSensor();
+        setupSensor(); // detect available sensors
         setupClickListeners();
-        loadTodayData();
+        loadTodayData(); // load DB saved or baseline-based steps
         setupTimeUpdater();
         checkAndRequestPermissions();
 
@@ -326,15 +350,43 @@ public class HomeFragment extends Fragment {
         return String.format("%02d:%02d:%02d", hours, minutes, seconds);
     }
 
+    /**
+     * Detect available sensors. Prefer TYPE_STEP_COUNTER. If not available, fallback to accelerometer.
+     */
     private void setupSensor() {
         sensorManager = (SensorManager) requireContext().getSystemService(Context.SENSOR_SERVICE);
-        if (sensorManager != null) {
-            accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-            if (accelerometer == null) {
-                showSensorNotAvailableDialog();
-            }
-        } else {
+        if (sensorManager == null) {
             showSensorNotAvailableDialog();
+            return;
+        }
+
+        // Try STEP_COUNTER first
+        Sensor counter = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
+        if (counter != null) {
+            stepCounterSensor = counter;
+            stepSensorIsCounter = true;
+            stepSensorIsDetector = false;
+            // We will register listener only when tracking, or when we need live updates
+            Log.d("HomeFragment", "Using TYPE_STEP_COUNTER");
+            return;
+        }
+
+        // Try STEP_DETECTOR
+        Sensor detector = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
+        if (detector != null) {
+            stepCounterSensor = detector;
+            stepSensorIsCounter = false;
+            stepSensorIsDetector = true;
+            Log.d("HomeFragment", "Using TYPE_STEP_DETECTOR");
+            return;
+        }
+
+        // Fallback: accelerometer algorithm
+        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        if (accelerometer == null) {
+            showSensorNotAvailableDialog();
+        } else {
+            Log.d("HomeFragment", "Using accelerometer fallback");
         }
     }
 
@@ -383,29 +435,80 @@ public class HomeFragment extends Fragment {
         };
     }
 
+    /**
+     * Start tracking:
+     * - If STEP_COUNTER available: register for it and ensure today's baseline is loaded.
+     * - Else if STEP_DETECTOR: register for detector and zero detectorAccumulatedSteps if starting new day.
+     * - Else accelerometer: register accelerometer listener.
+     */
     private void startStepTracking() {
-        if (accelerometer != null) {
-            startTime = System.currentTimeMillis() - elapsedTime;
+        // ensure baseline for today (if using step counter)
+        ensureBaselineForToday();
+
+        startTime = System.currentTimeMillis() - elapsedTime;
+
+        if (stepSensorIsCounter || stepSensorIsDetector) {
+            if (stepCounterSensor != null) {
+                sensorManager.registerListener(stepListener, stepCounterSensor, SensorManager.SENSOR_DELAY_UI);
+            }
+        } else if (accelerometer != null) {
             sensorManager.registerListener(stepListener, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
-            handler.post(timeUpdater);
         } else {
             showSensorNotAvailableDialog();
+            return;
         }
+
+        handler.post(timeUpdater);
     }
 
+    /**
+     * Stop tracking:
+     * - Unregister listener.
+     * - Save current data (DB).
+     * - For STEP_COUNTER: keep baseline as-is (or update baseline on reset/finish if you want show zero immediately).
+     */
     private void stopStepTracking() {
-        if (accelerometer != null) {
+        if (sensorManager != null) {
             sensorManager.unregisterListener(stepListener);
-            handler.removeCallbacks(timeUpdater);
-            saveCurrentData();
         }
+        handler.removeCallbacks(timeUpdater);
+
+        // Save today's data to DB
+        saveCurrentData();
     }
 
+    /**
+     * SensorEventListener that handles TYPE_STEP_COUNTER, TYPE_STEP_DETECTOR, and ACCELEROMETER fallback.
+     */
     private final SensorEventListener stepListener = new SensorEventListener() {
         @Override
         public void onSensorChanged(SensorEvent event) {
-            if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-                detectStep(event);
+            if (event.sensor.getType() == Sensor.TYPE_STEP_COUNTER) {
+                // cumulative steps since boot
+                totalSensorSteps = (int) event.values[0];
+
+                // If we are waiting to set baseline for today, set it now (only if baseline not set)
+                if (waitingForFirstCounterEvent) {
+                    stepsBaselineForToday = totalSensorSteps;
+                    saveBaselineForToday(stepsBaselineForToday);
+                    waitingForFirstCounterEvent = false;
+                }
+
+                // compute visible stepCount = totalSensorSteps - baselineForToday
+                stepCount = Math.max(0, totalSensorSteps - getBaselineForToday());
+                // update elapsedTime kept as before
+                updateUI();
+            } else if (event.sensor.getType() == Sensor.TYPE_STEP_DETECTOR) {
+                // each event.values[i] == 1.0f means a step
+                for (float v : event.values) {
+                    if (v == 1.0f) {
+                        detectorAccumulatedSteps++;
+                    }
+                }
+                stepCount = detectorAccumulatedSteps;
+                updateUI();
+            } else if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+                detectStep(event); // your existing accelerometer detection logic updates stepCount and UI
             }
         }
 
@@ -413,6 +516,10 @@ public class HomeFragment extends Fragment {
         public void onAccuracyChanged(Sensor sensor, int accuracy) {}
     };
 
+    /**
+     * Accelerometer-based detection (your existing implementation) — updates detectorAccumulatedSteps and stepCount.
+     * We preserve your verticalRatio check + peak detection.
+     */
     private void detectStep(SensorEvent event) {
         final float alpha = 0.8f;
 
@@ -440,21 +547,29 @@ public class HomeFragment extends Fragment {
                     (Math.abs(linear_acceleration[0]) + Math.abs(linear_acceleration[2]) + 0.1f);
 
             if (verticalRatio > DIRECTION_THRESHOLD) {
-                stepCount++;
+                detectorAccumulatedSteps++;
                 lastStepTime = currentTime;
+                // stepCount mirrors detectorAccumulatedSteps for accelerometer fallback
+                stepCount = detectorAccumulatedSteps;
                 updateUI();
             }
         }
     }
 
     private boolean isStepPattern() {
-        if (valueIndex < 3) return false;
-
+        // ensure we have filled the window
         float sum = 0;
-        for (float value : lastValues) {
-            sum += value;
+        int count = 0;
+        for (float v : lastValues) {
+            // some positions might be zero if not filled; count non-zero
+            if (v != 0f) {
+                sum += v;
+                count++;
+            }
         }
-        float avg = sum / PEAK_COUNT;
+        if (count < PEAK_COUNT) return false;
+
+        float avg = sum / count;
 
         float max = Float.MIN_VALUE;
         float min = Float.MAX_VALUE;
@@ -473,7 +588,7 @@ public class HomeFragment extends Fragment {
         if (getActivity() != null) {
             getActivity().runOnUiThread(() -> {
                 stepCountText.setText(String.valueOf(stepCount));
-                progressBar.setProgress(stepCount);
+                progressBar.setProgress(Math.min(stepCount, stepGoal));
 
                 int remainingSteps = Math.max(0, stepGoal - stepCount);
                 remainingText.setText(getString(R.string.remaining_steps_format, remainingSteps));
@@ -481,8 +596,8 @@ public class HomeFragment extends Fragment {
                 double kcal = stepCount * KCAL_PER_STEP;
                 double distance = stepCount * KM_PER_STEP;
 
-                kcalText.setText(String.format("%.2f", kcal));
-                distanceText.setText(String.format("%.2f", distance));
+                kcalText.setText(String.format(Locale.getDefault(), "%.2f", kcal));
+                distanceText.setText(String.format(Locale.getDefault(), "%.2f", distance));
 
                 updateTimeDisplay();
             });
@@ -496,30 +611,76 @@ public class HomeFragment extends Fragment {
                 (elapsedTime / 1000) % 60));
     }
 
+    /**
+     * Load today's data:
+     * - If using STEP_COUNTER: load baseline for today and compute stepCount = totalSensorSteps - baseline.
+     * - Else (accelerometer / detector): read DB saved value for today (your existing DB helper).
+     */
     private void loadTodayData() {
-        DatabaseHelper.StepData todayData = databaseHelper.getTodayStepData();
-        stepCount = todayData.steps;
-        elapsedTime = todayData.time;
+        // First, ensure baseline exists for today if we use step counter
+        if (stepSensorIsCounter) {
+            stepsBaselineForToday = getBaselineForToday();
+            // If baseline absent (-1), we'll wait for first counter event and set baseline then
+            if (stepsBaselineForToday == Integer.MIN_VALUE) {
+                // mark waiting - baseline not set yet
+                waitingForFirstCounterEvent = true;
+                stepCount = 0;
+            } else {
+                // If we already have a baseline, we cannot compute totalSensorSteps until we get an event,
+                // but UI should show saved DB value if any
+                // Try to load today's saved DB data (fallback)
+                DatabaseHelper.StepData todayData = databaseHelper.getTodayStepData();
+                stepCount = Math.max(todayData.steps, 0);
+            }
+        } else {
+            // accelerometer or detector: load DB value for today
+            DatabaseHelper.StepData todayData = databaseHelper.getTodayStepData();
+            stepCount = todayData.steps;
+            elapsedTime = todayData.time;
+        }
+
+        // update goal and UI
         stepGoal = getStepGoalForToday();
         progressBar.setMax(stepGoal);
         targetText.setText(getString(R.string.target_steps_format, stepGoal));
         updateUI();
     }
 
+    /**
+     * Save current data into DB.
+     * For STEP_COUNTER devices we also can save the baseline if we want to preserve exact daily counts.
+     */
     private void saveCurrentData() {
-        databaseHelper.saveStepData(
-                stepCount,
-                stepGoal,
-                stepCount * KCAL_PER_STEP,
-                stepCount * KM_PER_STEP,
-                elapsedTime
-        );
+        // If using step counter, persist today's baseline and today's computed values
+        if (stepSensorIsCounter) {
+            // Persist today's baseline to ensure consistent results across restarts
+            saveBaselineForToday(getBaselineForToday() == Integer.MIN_VALUE ? stepsBaselineForToday : getBaselineForToday());
+            // compute steps from cumulative if available
+            int stepsToSave = stepCount;
+            databaseHelper.saveStepData(
+                    stepsToSave,
+                    stepGoal,
+                    stepsToSave * KCAL_PER_STEP,
+                    stepsToSave * KM_PER_STEP,
+                    elapsedTime
+            );
+        } else {
+            // accelerometer / detector
+            int stepsToSave = stepCount;
+            databaseHelper.saveStepData(
+                    stepsToSave,
+                    stepGoal,
+                    stepsToSave * KCAL_PER_STEP,
+                    stepsToSave * KM_PER_STEP,
+                    elapsedTime
+            );
+        }
     }
 
     private void showSensorNotAvailableDialog() {
         new AlertDialog.Builder(requireContext())
                 .setTitle("Sensor Not Available")
-                .setMessage("Accelerometer is not available on this device.")
+                .setMessage("Accelerometer / Step sensor is not available on this device.")
                 .setPositiveButton("OK", null)
                 .show();
     }
@@ -566,17 +727,17 @@ public class HomeFragment extends Fragment {
     }
 
     private void checkAndRequestPermissions() {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACTIVITY_RECOGNITION)
                     != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(requireActivity(),
                         new String[]{Manifest.permission.ACTIVITY_RECOGNITION},
                         PERMISSION_REQUEST_ACTIVITY_RECOGNITION);
             } else {
-                setupSensor();
+                // permission ok -> sensors already detected in setupSensor()
             }
         } else {
-            setupSensor();
+            // older versions don't need runtime activity recognition permission
         }
     }
 
@@ -585,6 +746,7 @@ public class HomeFragment extends Fragment {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == PERMISSION_REQUEST_ACTIVITY_RECOGNITION) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // permission granted, okay to use step sensors
                 setupSensor();
             } else {
                 Toast.makeText(requireContext(), "Ứng dụng cần quyền theo dõi hoạt động để đếm bước chân",
@@ -592,5 +754,63 @@ public class HomeFragment extends Fragment {
             }
         }
     }
-}
 
+    // ---------------- Baseline persistence helpers ----------------
+
+    private String getTodayKey() {
+        Calendar c = Calendar.getInstance();
+        return new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(c.getTime());
+    }
+
+    private void saveBaselineForToday(int baseline) {
+        SharedPreferences prefs = requireContext().getSharedPreferences(PREFS_BASELINE, Context.MODE_PRIVATE);
+        prefs.edit().putInt(getTodayKey(), baseline).apply();
+    }
+
+    private int getBaselineForToday() {
+        SharedPreferences prefs = requireContext().getSharedPreferences(PREFS_BASELINE, Context.MODE_PRIVATE);
+        // return Integer.MIN_VALUE if not present
+        if (!prefs.contains(getTodayKey())) return Integer.MIN_VALUE;
+        return prefs.getInt(getTodayKey(), Integer.MIN_VALUE);
+    }
+
+    /**
+     * Ensure baseline exists for today if using step counter.
+     * If baseline not present, waitingForFirstCounterEvent=true and baseline will be set when first counter event arrives.
+     */
+    private void ensureBaselineForToday() {
+        if (!stepSensorIsCounter) return;
+
+        int saved = getBaselineForToday();
+        if (saved == Integer.MIN_VALUE) {
+            // baseline not set: if we already have a totalSensorSteps reading, set baseline now
+            if (totalSensorSteps > 0) {
+                stepsBaselineForToday = totalSensorSteps;
+                saveBaselineForToday(stepsBaselineForToday);
+                waitingForFirstCounterEvent = false;
+            } else {
+                // wait for first onSensorChanged(TYPE_STEP_COUNTER)
+                waitingForFirstCounterEvent = true;
+            }
+        } else {
+            // baseline already present - use it
+            stepsBaselineForToday = saved;
+            waitingForFirstCounterEvent = false;
+        }
+    }
+
+    /**
+     * If user finishes a walk/activity and you want the UI to show 0 immediately after finish,
+     * call resetBaselineToCurrentSensor() which sets today's baseline = current cumulative sensor value.
+     */
+    private void resetBaselineToCurrentSensor() {
+        if (!stepSensorIsCounter) return;
+        if (totalSensorSteps > 0) {
+            stepsBaselineForToday = totalSensorSteps;
+            saveBaselineForToday(stepsBaselineForToday);
+            // update UI to zero
+            stepCount = 0;
+            updateUI();
+        }
+    }
+}
