@@ -340,14 +340,19 @@ public class HomeFragment extends Fragment {
         stepsTextView.setText(totalSteps + " Steps");
         kcalTextView.setText(String.format(Locale.getDefault(), "%.1f Kcal", totalCalories));
         kmTextView.setText(String.format(Locale.getDefault(), "%.2f Km", totalDistance));
-        hoursTextView.setText(formatSecondsToHMS(totalTime));
+        hoursTextView.setText(formatMillisToHMS(totalTime));
     }
 
-    private String formatSecondsToHMS(long totalSeconds) {
+    /**
+     * totalMillis: thời gian lưu trong DB đang là milli‑seconds,
+     * cần đổi sang giây trước khi format HH:mm:ss.
+     */
+    private String formatMillisToHMS(long totalMillis) {
+        long totalSeconds = totalMillis / 1000;
         long hours = totalSeconds / 3600;
         long minutes = (totalSeconds % 3600) / 60;
         long seconds = totalSeconds % 60;
-        return String.format("%02d:%02d:%02d", hours, minutes, seconds);
+        return String.format(Locale.getDefault(), "%02d:%02d:%02d", hours, minutes, seconds);
     }
 
     /**

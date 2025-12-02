@@ -46,6 +46,7 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.RoundCap;
 import com.pedometer.steptracker.runwalk.dailytrack.R;
+import com.pedometer.steptracker.runwalk.dailytrack.model.DatabaseHelper;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -119,6 +120,9 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
     // Permissions
     private ActivityResultLauncher<String[]> locationPermissionLauncher;
     private ActivityResultLauncher<String> activityRecognitionLauncher;
+
+    // Database
+    private DatabaseHelper databaseHelper;
 
     private final Runnable timerRunnable = new Runnable() {
         @Override
@@ -221,6 +225,7 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.activity_activity, container, false);
+        databaseHelper = new DatabaseHelper(requireContext());
         bindViews(view);
         setupButtons();
         setupLocation();
@@ -461,6 +466,7 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
         if (distanceMeters >= 50 && getCurrentDuration() >= 30000) {
             saveRecentSession();
             updateRecentCard();
+            syncSessionToDailySteps();
             Toast.makeText(requireContext(),
                     "Đã lưu hoạt động: " + formatDistance(distanceMeters),
                     Toast.LENGTH_LONG).show();
@@ -474,6 +480,24 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
         resetSession();
         updateButtonState();
         updateStats();
+    }
+
+    /**
+     * Đồng bộ session hiện tại vào bảng steps (DatabaseHelper) để dữ liệu
+     * ở màn Home / Report / Achievement luôn khớp với Activity.
+     */
+    private void syncSessionToDailySteps() {
+        if (!isAdded() || databaseHelper == null) return;
+
+        int steps = getCurrentSteps();
+        if (steps <= 0) return;
+
+        double calories = steps * KCAL_PER_STEP;
+        // distanceMeters đang là mét, convert sang km để khớp cách lưu hiện tại (HomeFragment dùng km)
+        double distanceKm = distanceMeters / 1000d;
+        long timeMillis = getCurrentDuration(); // HomeFragment cũng đang lưu time ở đơn vị millis
+
+        databaseHelper.addToToday(steps, calories, distanceKm, timeMillis);
     }
 
     private void resetSession() {

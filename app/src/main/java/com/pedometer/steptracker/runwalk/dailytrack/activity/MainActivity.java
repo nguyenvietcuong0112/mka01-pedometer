@@ -1,5 +1,7 @@
 package com.pedometer.steptracker.runwalk.dailytrack.activity;
 
+import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 
@@ -13,6 +15,7 @@ import com.pedometer.steptracker.runwalk.dailytrack.fragment.ActivityFragment;
 import com.pedometer.steptracker.runwalk.dailytrack.fragment.HomeFragment;
 import com.pedometer.steptracker.runwalk.dailytrack.fragment.ReportFragment;
 import com.pedometer.steptracker.runwalk.dailytrack.fragment.SettingsFragment;
+import com.pedometer.steptracker.runwalk.dailytrack.service.StepCounterService;
 import com.pedometer.steptracker.runwalk.dailytrack.utils.BottomNavigationHelper;
 
 public class MainActivity extends AppCompatActivity {
@@ -30,12 +33,23 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        startStepServiceIfNeeded();
+
         // Get initial fragment from intent
         int initialNav = getIntent().getIntExtra("nav", BottomNavigationHelper.NAV_STEPS);
         currentNav = initialNav;
 
         loadFragment(initialNav);
         setupBottomNavigation();
+    }
+
+    private void startStepServiceIfNeeded() {
+        Intent serviceIntent = new Intent(this, StepCounterService.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(serviceIntent);
+        } else {
+            startService(serviceIntent);
+        }
     }
 
     private void setupBottomNavigation() {

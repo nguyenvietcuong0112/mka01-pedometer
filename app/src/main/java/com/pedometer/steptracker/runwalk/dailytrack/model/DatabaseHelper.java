@@ -25,6 +25,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COLUMN_DISTANCE = "distance";
     private static final String COLUMN_TIME = "time";
 
+    // default values when only steps are known (service)
+    private static final double KCAL_PER_STEP_DEFAULT = 0.04;
+
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -59,6 +62,108 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(COLUMN_TIME, time);
 
         db.insertWithOnConflict(TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+        db.close();
+    }
+
+    /**
+     * Cộng dồn thêm dữ liệu vào ngày hôm nay.
+     * Dùng khi kết thúc một session ở màn Activity/Home để cộng thêm
+     * vào tổng ngày (ví dụ thêm 1 buổi chạy).
+     */
+    public void addToToday(int steps, double calories, double distance, long time) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String today = getCurrentDate();
+
+        Cursor cursor = db.query(TABLE_NAME,
+                new String[]{COLUMN_STEPS, COLUMN_GOAL, COLUMN_CALORIES, COLUMN_DISTANCE, COLUMN_TIME},
+                COLUMN_DATE + "=?",
+                new String[]{today},
+                null, null, null);
+
+        ContentValues values = new ContentValues();
+
+        if (cursor != null && cursor.moveToFirst()) {
+            int currentSteps = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_STEPS));
+            int currentGoal = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_GOAL));
+            double currentCalories = cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_CALORIES));
+            double currentDistance = cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_DISTANCE));
+            long currentTime = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_TIME));
+
+            values.put(COLUMN_STEPS, currentSteps + steps);
+            values.put(COLUMN_GOAL, currentGoal);
+            values.put(COLUMN_CALORIES, currentCalories + calories);
+            values.put(COLUMN_DISTANCE, currentDistance + distance);
+            values.put(COLUMN_TIME, currentTime + time);
+
+            cursor.close();
+
+            db.update(TABLE_NAME, values, COLUMN_DATE + "=?", new String[]{today});
+        } else {
+            // Nếu hôm nay chưa có dòng nào, tạo mới với dữ liệu session
+            if (cursor != null) {
+                cursor.close();
+            }
+
+            values.put(COLUMN_DATE, today);
+            values.put(COLUMN_STEPS, steps);
+            // Goal mặc định 6000 nếu chưa có – trùng với DEFAULT_GOAL ở HomeFragment
+            values.put(COLUMN_GOAL, 6000);
+            values.put(COLUMN_CALORIES, calories);
+            values.put(COLUMN_DISTANCE, distance);
+            values.put(COLUMN_TIME, time);
+
+            db.insert(TABLE_NAME, null, values);
+        }
+
+        db.close();
+    }
+
+    /**
+     * Cập nhật tổng bước/ngày dựa trên sensor hệ thống (foreground service).
+     * Chỉ ghi đè cột steps và calories, GIỮ NGUYÊN distance/time hiện có
+     * (thường được tính chính xác hơn từ Activity/Home).
+     *
+     * @param stepsFromSensor tổng số bước của ngày hiện tại (không phải delta)
+     */
+    public void updateTodayStepsFromSensor(int stepsFromSensor) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String today = getCurrentDate();
+
+        Cursor cursor = db.query(TABLE_NAME,
+                new String[]{COLUMN_STEPS, COLUMN_GOAL, COLUMN_CALORIES, COLUMN_DISTANCE, COLUMN_TIME},
+                COLUMN_DATE + "=?",
+                new String[]{today},
+                null, null, null);
+
+        ContentValues values = new ContentValues();
+        double caloriesFromSensor = stepsFromSensor * KCAL_PER_STEP_DEFAULT;
+
+        if (cursor != null && cursor.moveToFirst()) {
+            int currentGoal = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_GOAL));
+            double currentDistance = cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_DISTANCE));
+            long currentTime = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_TIME));
+
+            values.put(COLUMN_STEPS, stepsFromSensor);
+            values.put(COLUMN_GOAL, currentGoal);
+            values.put(COLUMN_CALORIES, caloriesFromSensor);
+            values.put(COLUMN_DISTANCE, currentDistance);
+            values.put(COLUMN_TIME, currentTime);
+
+            cursor.close();
+            db.update(TABLE_NAME, values, COLUMN_DATE + "=?", new String[]{today});
+        } else {
+            if (cursor != null) cursor.close();
+
+            values.put(COLUMN_DATE, today);
+            values.put(COLUMN_STEPS, stepsFromSensor);
+            values.put(COLUMN_GOAL, 6000);
+            values.put(COLUMN_CALORIES, caloriesFromSensor);
+            values.put(COLUMN_DISTANCE, 0);
+            values.put(COLUMN_TIME, 0);
+
+            db.insert(TABLE_NAME, null, values);
+        }
+
         db.close();
     }
 
