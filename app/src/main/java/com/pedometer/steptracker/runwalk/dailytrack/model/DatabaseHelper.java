@@ -269,6 +269,4 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         public float calories;
         public float distance;
     }
-
-
 }

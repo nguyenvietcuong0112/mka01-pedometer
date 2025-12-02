@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:padding="8dp">
+
+    <ImageView
+        android:id="@+id/img_badge"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:src="@drawable/ic_nav_achievement_unselected" />
+
+    <TextView
+        android:id="@+id/text_badge_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:gravity="center"
+        android:text="Badge"
+        android:textColor="#808080"
+        android:textSize="11sp"
+        android:fontFamily="@font/montserrat_regular" />
+
+</LinearLayout>
+
+

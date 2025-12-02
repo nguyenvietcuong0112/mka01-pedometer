@@ -126,4 +126,12 @@
     <string name="note_description2">Record daily stats and view clear insights.</string>
     <string name="note_description3">Keep your readings organized and easy to review.</string>
     <string name="note_description4">Manage your heart health with ease.</string>
+
+    <!-- Achievement -->
+    <string name="current_steps_label">Current steps</string>
+    <string name="current_combo_label">Current day</string>
+    <string name="badge_steps_format">Reach %1$d steps to achieve this badge</string>
+    <string name="badge_combo_format">Run %1$d day to achieve this badge</string>
+    <string name="share_achievement_text">My achievement today: %1$s in Pedometer!</string>
+    <string name="share_via">Share via</string>
 </resources>
