@@ -88,8 +88,8 @@ public class IntroActivity extends BaseActivity implements View.OnClickListener 
     }
 
     private void handleNavigate() {
-        Intent intent = new Intent(IntroActivity.this, MainActivity.class);
-        intent.putExtra("nav", com.pedometer.steptracker.runwalk.dailytrack.utils.BottomNavigationHelper.NAV_STEPS);
+        // Sau intro, chuyển sang màn xin quyền trước khi vào Main
+        Intent intent = new Intent(IntroActivity.this, PermissionActivity.class);
         startActivity(intent);
     }
 

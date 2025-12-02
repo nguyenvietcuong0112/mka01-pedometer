@@ -17,6 +17,7 @@ import com.mallegan.ads.callback.NativeCallback;
 import com.mallegan.ads.util.Admob;
 import com.pedometer.steptracker.runwalk.dailytrack.R;
 import com.pedometer.steptracker.runwalk.dailytrack.activity.MainActivity;
+import com.pedometer.steptracker.runwalk.dailytrack.activity.PermissionActivity;
 import com.pedometer.steptracker.runwalk.dailytrack.activity.nativefull.ActivityLoadNativeFullV2;
 import com.pedometer.steptracker.runwalk.dailytrack.databinding.FragmentIntro4Binding;
 import com.pedometer.steptracker.runwalk.dailytrack.utils.SharePreferenceUtils;
@@ -67,7 +68,7 @@ public class FragmentIntro4 extends AbsBaseFragment<FragmentIntro4Binding> {
     }
 
     private void handleNavigate() {
-        Intent intent = new Intent(requireActivity(), MainActivity.class);
+        Intent intent = new Intent(requireActivity(), PermissionActivity.class);
         startActivity(intent);
     }
 

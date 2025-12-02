@@ -30,6 +30,10 @@ public class StepCounterService extends Service implements SensorEventListener {
     private static final String CHANNEL_ID = "step_counter_channel";
     private static final int NOTIFICATION_ID = 1001;
 
+    // per-step constants used when cộng thêm delta từ sensor
+    private static final double KCAL_PER_STEP = 0.04;
+    private static final double KM_PER_STEP = 0.0008;
+
     private SensorManager sensorManager;
     private Sensor stepCounterSensor;
 
@@ -99,8 +103,19 @@ public class StepCounterService extends Service implements SensorEventListener {
 
         int todaySteps = Math.max(0, totalSensorSteps - baselineToday);
 
-        // Cập nhật lại tổng bước của ngày từ sensor; giữ nguyên distance/time hiện có
-        databaseHelper.updateTodayStepsFromSensor(todaySteps);
+        // Lấy bước hiện đang lưu trong DB
+        DatabaseHelper.StepData todayData = databaseHelper.getTodayStepData();
+        int currentDbSteps = todayData.steps;
+
+        // Chỉ cộng thêm phần chênh lệch mới đo được từ sensor
+        int extraSteps = Math.max(0, todaySteps - currentDbSteps);
+        if (extraSteps > 0) {
+            double extraCalories = extraSteps * KCAL_PER_STEP;
+            double extraDistance = extraSteps * KM_PER_STEP;
+            long extraTime = estimateTimeMillis(extraSteps); // ước lượng thời gian đi thêm
+
+            databaseHelper.addToToday(extraSteps, extraCalories, extraDistance, extraTime);
+        }
 
         // Update foreground notification
         Notification notification = buildNotification(todaySteps);

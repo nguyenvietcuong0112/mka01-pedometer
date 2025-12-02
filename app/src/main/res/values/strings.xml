@@ -134,4 +134,14 @@
     <string name="badge_combo_format">Run %1$d day to achieve this badge</string>
     <string name="share_achievement_text">My achievement today: %1$s in Pedometer!</string>
     <string name="share_via">Share via</string>
+
+    <!-- Permissions -->
+    <string name="permission_description">Allow these permissions so we can count your steps and track distance accurately, even when the app is in the background.</string>
+    <string name="permission_grant_button">Continue</string>
+    <string name="permission_activity_title">Activity recognition</string>
+    <string name="permission_activity_desc">Needed to detect your steps.</string>
+    <string name="permission_location_title">Location</string>
+    <string name="permission_location_desc">Needed to measure distance during activities.</string>
+    <string name="permission_notification_title">Notifications</string>
+    <string name="permission_notification_desc">Used to show your daily progress.</string>
 </resources>

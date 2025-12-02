@@ -521,13 +521,22 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void saveCurrentData() {
-        databaseHelper.saveStepData(
-                stepCount,
-                stepGoal,
-                stepCount * KCAL_PER_STEP,
-                stepCount * KM_PER_STEP,
-                elapsedTime
-        );
+        // Cộng thêm delta để không ghi đè dữ liệu từ service
+        DatabaseHelper.StepData todayData = databaseHelper.getTodayStepData();
+        int extraSteps = stepCount - todayData.steps;
+        long extraTime = elapsedTime - todayData.time;
+
+        if (extraSteps < 0) extraSteps = 0;
+        if (extraTime < 0) extraTime = 0;
+
+        if (extraSteps > 0 || extraTime > 0) {
+            databaseHelper.addToToday(
+                    extraSteps,
+                    extraSteps * KCAL_PER_STEP,
+                    extraSteps * KM_PER_STEP,
+                    extraTime
+            );
+        }
     }
 
     private void showSensorNotAvailableDialog() {

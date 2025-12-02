@@ -31,6 +31,15 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Nếu chưa đủ quyền thì chuyển sang màn Permission và dừng Main
+        if (!PermissionActivity.hasAllRequiredPermissions(this)) {
+            Intent intent = new Intent(this, PermissionActivity.class);
+            startActivity(intent);
+            finish();
+            return;
+        }
+
         setContentView(R.layout.activity_main);
 
         startStepServiceIfNeeded();

@@ -656,28 +656,27 @@ public class HomeFragment extends Fragment {
      * For STEP_COUNTER devices we also can save the baseline if we want to preserve exact daily counts.
      */
     private void saveCurrentData() {
-        // If using step counter, persist today's baseline and today's computed values
+        // Lưu baseline nếu đang dùng STEP_COUNTER
         if (stepSensorIsCounter) {
-            // Persist today's baseline to ensure consistent results across restarts
-            saveBaselineForToday(getBaselineForToday() == Integer.MIN_VALUE ? stepsBaselineForToday : getBaselineForToday());
-            // compute steps from cumulative if available
-            int stepsToSave = stepCount;
-            databaseHelper.saveStepData(
-                    stepsToSave,
-                    stepGoal,
-                    stepsToSave * KCAL_PER_STEP,
-                    stepsToSave * KM_PER_STEP,
-                    elapsedTime
-            );
-        } else {
-            // accelerometer / detector
-            int stepsToSave = stepCount;
-            databaseHelper.saveStepData(
-                    stepsToSave,
-                    stepGoal,
-                    stepsToSave * KCAL_PER_STEP,
-                    stepsToSave * KM_PER_STEP,
-                    elapsedTime
+            saveBaselineForToday(getBaselineForToday() == Integer.MIN_VALUE
+                    ? stepsBaselineForToday
+                    : getBaselineForToday());
+        }
+
+        // Chỉ cộng thêm phần chênh lệch so với DB để tránh ghi đè dữ liệu service
+        DatabaseHelper.StepData todayData = databaseHelper.getTodayStepData();
+        int extraSteps = stepCount - todayData.steps;
+        long extraTime = elapsedTime - todayData.time;
+
+        if (extraSteps < 0) extraSteps = 0;
+        if (extraTime < 0) extraTime = 0;
+
+        if (extraSteps > 0 || extraTime > 0) {
+            databaseHelper.addToToday(
+                    Math.max(0, extraSteps),
+                    Math.max(0, extraSteps * KCAL_PER_STEP),
+                    Math.max(0, extraSteps * KM_PER_STEP),
+                    Math.max(0L, extraTime)
             );
         }
     }
