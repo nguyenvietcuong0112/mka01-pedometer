@@ -37,10 +37,6 @@
     </string-array>
 
 
-    <string name="note_continue1">Track your steps and stay active every day!</string>
-    <string name="note_continue2">See your calories and distance in real time!</string>
-    <string name="note_continue3">Set daily goals and watch your progress grow!</string>
-    <string name="note_continue4">Stay motivated and keep your steps up!</string>
     <string name="note_guide1"></string>
     <string name="note_guide2"></string>
     <string name="note_guide3"></string>
@@ -106,4 +102,16 @@
     <string name="portuguese_angona" translatable="false">Portuguese(Angona)</string>
     <string name="portuguese_mozambique" translatable="false">Portuguese(Mozambique)</string>
     <string name="germany">Germany</string>
+    <string name="done">Done</string>
+    <string name="not_much_more_useful_nthan_the_defaults">Not much more useful\nthan the defaults</string>
+    <string name="unresponsive_or_laggy">Unresponsive or\nLaggy</string>
+    <string name="uninstall">Uninstall</string>
+    <string name="note_continue1">Track Your Health Easily</string>
+    <string name="note_continue2">Stay on Top of Your Health</string>
+    <string name="note_continue3">Better Health Starts Here</string>
+    <string name="note_continue4">Understand Your Health Data</string>
+    <string name="note_description1">Monitor readings and stay informed every day.</string>
+    <string name="note_description2">Record daily stats and view clear insights.</string>
+    <string name="note_description3">Keep your readings organized and easy to review.</string>
+    <string name="note_description4">Manage your heart health with ease.</string>
 </resources>

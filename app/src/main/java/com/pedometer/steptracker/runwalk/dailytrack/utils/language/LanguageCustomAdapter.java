@@ -19,24 +19,11 @@ public class LanguageCustomAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     private OnItemClickListener onItemClickListener;
     private int checkedPosition = -1;
 
-    private boolean isHand;
 
-    private boolean isFirst = true;
-
-
-    public LanguageCustomAdapter(ArrayList<LanguageModel> newData, boolean isHand) {
+    public LanguageCustomAdapter( ArrayList<LanguageModel> newData) {
 
         this.data = newData;
-        this.isHand = isHand;
-    }
 
-
-    public void updateData(ArrayList<LanguageModel> newData) {
-        data.clear();
-        if (newData != null && !newData.isEmpty()) {
-            data.addAll(newData);
-        }
-        notifyDataSetChanged();
     }
 
     public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
@@ -68,45 +55,46 @@ public class LanguageCustomAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
         public void bind(int position) {
             LanguageModel languageModel = data.get(position);
-            binding.tvTitle.setText(languageModel.getLanguageName());
+            binding.txtName.setText(languageModel.getLanguageName());
             if (languageModel.getImage() == 0) {
-                binding.ivAvatar.setVisibility(View.GONE);
+                binding.imgFlag.setVisibility(View.GONE);
             } else {
-                binding.ivAvatar.setVisibility(View.VISIBLE);
-                binding.ivAvatar.setImageResource(languageModel.getImage());
+                binding.imgFlag.setVisibility(View.VISIBLE);
+                binding.imgFlag.setImageResource(languageModel.getImage());
             }
-            if (position == 1 && isHand && isFirst) {
+
+            boolean isEnglish = languageModel.getLanguageName().equals(
+                    binding.getRoot().getContext().getString(R.string.english_us)
+            );
+            boolean isNoneSelected = (checkedPosition == -1);
+
+            if (isEnglish && isNoneSelected) {
                 binding.animHand.setVisibility(View.VISIBLE);
             } else {
                 binding.animHand.setVisibility(View.GONE);
             }
+
             if (checkedPosition == -1) {
-                binding.imgSelected.setImageResource(R.drawable.ic_unselect_language);
+                binding.ctr1.setBackgroundResource(R.drawable.bg_language_custom);
             } else {
                 if (checkedPosition == getAdapterPosition()) {
-                    binding.imgSelected.setImageResource(R.drawable.ic_checked_language);
+                    binding.ctr1.setBackgroundResource(R.drawable.bg_language_custom_check);
                 } else {
-                    binding.imgSelected.setImageResource(R.drawable.ic_unselect_language);
+                    binding.ctr1.setBackgroundResource(R.drawable.bg_language_custom);
                 }
             }
             binding.getRoot().setOnClickListener(v -> {
-                binding.imgSelected.setImageResource(R.drawable.ic_checked_language);
-                isFirst = false;
-                binding.animHand.setVisibility(View.GONE);
+                onItemClickListener.onPreviousPosition(checkedPosition);
+                binding.ctr1.setBackgroundResource(R.drawable.bg_language_custom_check);
                 if (checkedPosition != getAdapterPosition()) {
                     notifyItemChanged(checkedPosition);
                     checkedPosition = getAdapterPosition();
-                    onItemClickListener.onItemNewClick(position, languageModel, LanguageCustomAdapter.this);
+                    onItemClickListener.onItemNewClick(position, languageModel);
                 }
+                notifyDataSetChanged();
             });
         }
 
-    }
-
-
-    public void hideAnimHand() {
-        isFirst = false;
-        notifyItemChanged(1);
     }
 
     @Override
@@ -115,7 +103,7 @@ public class LanguageCustomAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     }
 
     public interface OnItemClickListener {
-        void onItemNewClick(int pos, LanguageModel itemTabModel, LanguageCustomAdapter adapter);
+        void onItemNewClick(int pos, LanguageModel itemTabModel);
 
         void onPreviousPosition(int pos);
     }

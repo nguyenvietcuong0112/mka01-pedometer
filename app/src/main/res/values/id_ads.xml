@@ -47,6 +47,8 @@
     <string name="app_id" translatable="false">ca-app-pub-3940256099942544~3347511713</string>
 
     <string name="inter_splash" translatable="false"></string>
+    <string name="inter_splash_high" translatable="false"></string>
+
     <string name="inter_intro" translatable="false"></string>
 
     <string name="native_onboarding1" translatable="false"></string>
@@ -74,7 +76,18 @@
 
     <string name="native_full_intro" translatable="false"></string>
     <string name="native_full_language" translatable="false"></string>
+    <string name="open_splash_uninstall" translatable="false"></string>
+    <string name="native_full_splash_uninstall" translatable="false"></string>
+    <string name="native_keep_user" translatable="false"></string>
+    <string name="native_language_select_high" translatable="false"></string>
+    <string name="native_banner_intro" translatable="false"></string>
 
+    <string name="native_full_intro2" translatable="false"></string>
+    <string name="native_full_intro3" translatable="false"></string>
+    <string name="inter_intro4" translatable="false"></string>
+    <string name="native_full_inter_intro" translatable="false"></string>
+    <string name="native_full_splash_high" translatable="false"></string>
+    <string name="native_full_splash" translatable="false"></string>
     <string name="open_resume" translatable="false">ca-app-pub-3940256099942544/9257395921</string>
 
 

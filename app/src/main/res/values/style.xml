@@ -30,4 +30,25 @@
         <item name="android:width">20dp</item>
         <item name="android:height">20dp</item>
     </style>
+    <style name="Theme.TransparentActivity" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Không có action bar -->
+        <item name="windowNoTitle">true</item>
+        <item name="windowActionBar">false</item>
+
+        <!-- Trong suốt nền -->
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:backgroundDimEnabled">false</item>
+
+
+        <!-- Loại bỏ shadow khi chuyển -->
+        <item name="android:windowAnimationStyle">@null</item>
+    </style>
+
+    <style name="TransparentDialog" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="android:windowMinWidthMajor">90%</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:backgroundDimAmount">0.6</item>
+    </style>
 </resources>
