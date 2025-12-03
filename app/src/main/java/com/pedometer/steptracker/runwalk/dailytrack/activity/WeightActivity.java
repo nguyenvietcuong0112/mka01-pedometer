@@ -30,9 +30,10 @@ import java.util.Locale;
 
 public class WeightActivity extends AppCompatActivity {
 
-    private TextView tvCurrentWeight, tvWeightGoal, tvWeightDate;
+    private TextView tvCurrentWeight, tvWeightGoal, tvWeightDate,btnReset;;
     private TextView tvRecentWeight, tvRecentDate, tvRecentWeightValue;
-    private Button btnEditGoalMain, btnReset;
+    private TextView btnEditGoalMain;
+
     private ImageView ivBack, btnEditGoal;
     private LineChart weightChart;
 

@@ -101,7 +101,7 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
     private TextView countdownText;
 
     private View headerBar;
-    private LinearLayout recentCard;
+    private LinearLayout recentCard,listRecent;
     private TextView emptyRecentText;
     private View recentHeader;
     private NestedScrollView scrollView;
@@ -287,6 +287,8 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
         recentHeader = root.findViewById(R.id.recentHeader);
         scrollView = root.findViewById(R.id.activityScroll);
 
+        listRecent = root.findViewById(R.id.listRecent);
+
         recentTitleText = root.findViewById(R.id.activityRecentTitle);
         recentTimeText = root.findViewById(R.id.activityRecentTime);
         recentCaloriesText = root.findViewById(R.id.activityRecentCalories);
@@ -313,7 +315,7 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
 
         // Tăng chiều cao map nhưng KHÔNG MATCH_PARENT
         ViewGroup.LayoutParams params = mapView.getLayoutParams();
-        params.height = (int) (400 * getResources().getDisplayMetrics().density); // ~450dp thay vì MATCH_PARENT
+        params.height = (int) (450 * getResources().getDisplayMetrics().density); // ~450dp thay vì MATCH_PARENT
         mapView.setLayoutParams(params);
     }
 
@@ -337,7 +339,13 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
         startButton.setText(isTrackingMode ? R.string.start_running : R.string.start);
         if (isTrackingMode) {
             startButton.setOnClickListener(v -> startSession());
+            headerBar.setVisibility(View.GONE);
+            timerText.setVisibility(View.VISIBLE);
+            listRecent.setVisibility(View.GONE);
         } else {
+            headerBar.setVisibility(View.VISIBLE);
+            timerText.setVisibility(View.GONE);
+            listRecent.setVisibility(View.VISIBLE);
             startButton.setOnClickListener(v -> {
                 if (getActivity() != null) {
                     Intent intent = new Intent(getActivity(), RunningActivity.class);

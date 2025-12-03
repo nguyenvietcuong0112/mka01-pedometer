@@ -8,9 +8,9 @@
 
     <ImageView
         android:id="@+id/img_badge"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
-        android:src="@drawable/ic_nav_achievement_unselected" />
+        android:layout_width="@dimen/_100sdp"
+        android:layout_height="@dimen/_70sdp"
+        android:src="@drawable/ic_step_achievement_unselected" />
 
     <TextView
         android:id="@+id/text_badge_title"
@@ -19,7 +19,7 @@
         android:layout_marginTop="6dp"
         android:gravity="center"
         android:text="Badge"
-        android:textColor="#808080"
+        android:textColor="@color/black"
         android:textSize="11sp"
         android:fontFamily="@font/montserrat_regular" />
 

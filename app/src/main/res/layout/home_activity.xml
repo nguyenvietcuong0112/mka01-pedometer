@@ -11,8 +11,8 @@
     <androidx.core.widget.NestedScrollView
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/frAdsCollap"
         android:paddingBottom="@dimen/_5sdp"
+        app:layout_constraintBottom_toTopOf="@+id/frAdsCollap"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -28,36 +28,21 @@
             <LinearLayout
                 android:id="@+id/headerBar"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="@dimen/_70sdp"
                 android:background="@drawable/bg_header_blue"
+                android:backgroundTint="@color/blue"
+                android:gravity="bottom"
                 android:orientation="horizontal"
                 android:paddingHorizontal="@dimen/_15sdp"
                 android:paddingVertical="@dimen/_12sdp"
-                android:gravity="center_vertical"
                 app:layout_constraintTop_toTopOf="parent">
 
                 <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_marginEnd="@dimen/_8sdp"
-                    android:src="@drawable/ic_step_pedo"
-                    android:tint="#FFFFFF" />
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:fontFamily="@font/montserrat_bold"
-                    android:text="Pedometer"
-                    android:textColor="#FFFFFF"
-                    android:textSize="@dimen/_20sdp" />
-
-                <ImageButton
-                    android:id="@+id/settingsButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/ic_setting"
-                    android:tint="#FFFFFF" />
+                    android:src="@drawable/img_pedometer"
+                     />
+
             </LinearLayout>
 
             <!-- Step Tracking Section -->
@@ -78,9 +63,15 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@drawable/bg_green_banner"
+                    android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:padding="@dimen/_12sdp"
-                    android:gravity="center_vertical">
+                    android:padding="@dimen/_12sdp">
+
+                    <ImageView
+                        android:layout_width="60dp"
+                        android:layout_height="60dp"
+                        android:layout_marginEnd="@dimen/_10sdp"
+                        android:src="@drawable/ic_running" />
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -108,12 +99,6 @@
                             android:textSize="12sp" />
                     </LinearLayout>
 
-                    <ImageView
-                        android:layout_width="60dp"
-                        android:layout_height="60dp"
-                        android:layout_marginStart="@dimen/_10sdp"
-                        android:src="@drawable/ic_step_pedo"
-                        android:alpha="0.3" />
                 </LinearLayout>
 
                 <!-- Main Content: Left Cards + Right Circle -->
@@ -121,8 +106,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/_15sdp"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
 
                     <!-- Left: Three Metric Cards (Vertical Stack) -->
                     <LinearLayout
@@ -131,52 +116,99 @@
                         android:layout_weight="1"
                         android:orientation="vertical">
 
-                        <!-- Kcal Card -->
+
+
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="@dimen/_8sdp"
-                            android:background="@drawable/bg_card"
-                            android:orientation="vertical"
-                            android:padding="@dimen/_10sdp">
+                            android:background="@drawable/bg_card_home"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:paddingVertical="@dimen/_5sdp"
+                            android:paddingHorizontal="@dimen/_8sdp">
 
                             <LinearLayout
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginBottom="@dimen/_5sdp"
                                 android:orientation="horizontal">
 
                                 <ImageView
                                     android:layout_width="16dp"
                                     android:layout_height="16dp"
-                                    android:layout_marginEnd="@dimen/_5sdp"
+                                    android:layout_marginEnd="@dimen/_8sdp"
                                     android:src="@drawable/ic_kcal" />
+
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical">
+
+
+                                <TextView
+                                    android:id="@+id/kcalText"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/montserrat_bold"
+                                    android:text="0.00"
+                                    android:textColor="@color/black"
+                                    android:textSize="16sp" />
 
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:fontFamily="@font/montserrat_medium"
-                                    android:text="Calories"
-                                    android:textColor="@color/black"
-                                    android:textSize="@dimen/_12sdp" />
+                                    android:fontFamily="@font/montserrat_regular"
+                                    android:text="Kcal"
+                                    android:textColor="#5A5A5A"
+                                    android:textSize="10sp" />
                             </LinearLayout>
 
-                            <TextView
-                                android:id="@+id/kcalText"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:fontFamily="@font/montserrat_bold"
-                                android:text="0.00"
-                                android:textColor="@color/black"
-                                android:textSize="16sp" />
 
-                            <TextView
+                        </LinearLayout>
+
+                        <!-- Distance Card -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_card_home"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="@dimen/_8sdp"
+                            android:paddingVertical="@dimen/_5sdp"
+                            android:paddingHorizontal="@dimen/_8sdp"
+                            >
+                            <ImageView
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:layout_marginEnd="@dimen/_8sdp"
+                                android:src="@drawable/ic_distance" />
+
+                            <LinearLayout
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:fontFamily="@font/montserrat_regular"
-                                android:text="Kcal"
-                                android:textColor="#5A5A5A"
-                                android:textSize="10sp" />
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:id="@+id/distanceText"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/montserrat_bold"
+                                    android:text="0.00"
+                                    android:textColor="@color/black"
+                                    android:textSize="16sp" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/montserrat_regular"
+                                    android:text="Km"
+                                    android:textColor="#5A5A5A"
+                                    android:textSize="10sp" />
+                            </LinearLayout>
+
+
                         </LinearLayout>
 
                         <!-- Time Card -->
@@ -184,101 +216,52 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="@dimen/_8sdp"
-                            android:background="@drawable/bg_card"
-                            android:orientation="vertical"
-                            android:padding="@dimen/_10sdp">
+                            android:background="@drawable/bg_card_home"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:paddingVertical="@dimen/_5sdp"
+                            android:paddingHorizontal="@dimen/_8sdp"
+                            >
 
+
+                            <ImageView
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:layout_marginEnd="@dimen/_8sdp"
+                                android:src="@drawable/ic_time" />
                             <LinearLayout
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginBottom="@dimen/_5sdp"
-                                android:orientation="horizontal">
+                                android:orientation="vertical">
 
-                                <ImageView
-                                    android:layout_width="16dp"
-                                    android:layout_height="16dp"
-                                    android:layout_marginEnd="@dimen/_5sdp"
-                                    android:src="@drawable/ic_time" />
+                                <TextView
+                                    android:id="@+id/timeText"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/montserrat_bold"
+                                    android:text="00:00:00"
+                                    android:textColor="@color/black"
+                                    android:textSize="16sp" />
 
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:fontFamily="@font/montserrat_medium"
-                                    android:text="Time"
-                                    android:textColor="@color/black"
-                                    android:textSize="@dimen/_12sdp" />
+                                    android:fontFamily="@font/montserrat_regular"
+                                    android:text="Min"
+                                    android:textColor="#5A5A5A"
+                                    android:textSize="10sp" />
+
                             </LinearLayout>
 
-                            <TextView
-                                android:id="@+id/timeText"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:fontFamily="@font/montserrat_bold"
-                                android:text="00:00:00"
-                                android:textColor="@color/black"
-                                android:textSize="16sp" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:fontFamily="@font/montserrat_regular"
-                                android:text="Min"
-                                android:textColor="#5A5A5A"
-                                android:textSize="10sp" />
                         </LinearLayout>
 
-                        <!-- Distance Card -->
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:background="@drawable/bg_card"
-                            android:orientation="vertical"
-                            android:padding="@dimen/_10sdp">
 
-                            <LinearLayout
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginBottom="@dimen/_5sdp"
-                                android:orientation="horizontal">
-
-                                <ImageView
-                                    android:layout_width="16dp"
-                                    android:layout_height="16dp"
-                                    android:layout_marginEnd="@dimen/_5sdp"
-                                    android:src="@drawable/ic_distance" />
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:fontFamily="@font/montserrat_medium"
-                                    android:text="Distance"
-                                    android:textColor="@color/black"
-                                    android:textSize="@dimen/_12sdp" />
-                            </LinearLayout>
-
-                            <TextView
-                                android:id="@+id/distanceText"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:fontFamily="@font/montserrat_bold"
-                                android:text="0.00"
-                                android:textColor="@color/black"
-                                android:textSize="16sp" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:fontFamily="@font/montserrat_regular"
-                                android:text="Km"
-                                android:textColor="#5A5A5A"
-                                android:textSize="10sp" />
-                        </LinearLayout>
                     </LinearLayout>
 
                     <!-- Right: Circular Progress with Buttons -->
                     <FrameLayout
-                        android:layout_width="@dimen/_130sdp"
-                        android:layout_height="@dimen/_130sdp"
+                        android:layout_width="@dimen/_180sdp"
+                        android:layout_height="@dimen/_180sdp"
                         android:layout_marginStart="@dimen/_15sdp">
 
                         <ProgressBar
@@ -334,8 +317,8 @@
                             android:layout_height="wrap_content"
                             android:layout_gravity="bottom|center_horizontal"
                             android:layout_marginBottom="8dp"
-                            android:orientation="horizontal"
-                            android:gravity="center">
+                            android:gravity="center"
+                            android:orientation="horizontal">
 
                             <ImageButton
                                 android:id="@+id/startStopButton"
@@ -343,9 +326,9 @@
                                 android:layout_height="32dp"
                                 android:layout_marginEnd="8dp"
                                 android:background="@drawable/bg_circle_button"
-                                android:src="@drawable/ic_play"
-                                android:scaleType="centerInside"
                                 android:padding="6dp"
+                                android:scaleType="centerInside"
+                                android:src="@drawable/ic_play"
                                 android:tint="#5F7DED" />
 
                             <ImageButton
@@ -353,9 +336,9 @@
                                 android:layout_width="32dp"
                                 android:layout_height="32dp"
                                 android:background="@drawable/bg_circle_button"
-                                android:src="@drawable/ic_edit_goal"
-                                android:scaleType="centerInside"
                                 android:padding="6dp"
+                                android:scaleType="centerInside"
+                                android:src="@drawable/ic_edit_goal"
                                 android:tint="#5F7DED" />
                         </LinearLayout>
                     </FrameLayout>
@@ -387,10 +370,10 @@
                 android:id="@+id/fr_ads_banner"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/white"
-                app:layout_constraintTop_toBottomOf="@id/toolbar"
                 android:layout_marginVertical="@dimen/_5sdp"
-                android:visibility="visible">
+                android:background="@color/white"
+                android:visibility="visible"
+                app:layout_constraintTop_toBottomOf="@id/toolbar">
 
                 <include layout="@layout/ad_native_container_banner_1" />
             </FrameLayout>
@@ -402,7 +385,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="@dimen/_10sdp"
                 android:layout_marginTop="@dimen/_10sdp"
-                android:background="@drawable/bg_card"
+                android:background="@color/transparent"
                 android:orientation="vertical"
                 android:paddingVertical="@dimen/_10sdp"
                 app:layout_constraintTop_toBottomOf="@+id/fr_ads_banner">
@@ -417,10 +400,10 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:fontFamily="@font/montserrat_medium"
+                        android:fontFamily="@font/montserrat_bold"
                         android:text="Your daily goals"
-                        android:textColor="#5A5A5A"
-                        android:textSize="@dimen/_12sdp" />
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/_14sdp" />
 
                     <View
                         android:layout_width="0dp"
@@ -680,8 +663,8 @@
                         android:orientation="horizontal">
 
                         <ImageView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_width="@dimen/_50sdp"
+                            android:layout_height="@dimen/_50sdp"
                             android:src="@drawable/ic_running" />
 
                         <TextView
@@ -837,19 +820,19 @@
                 android:layout_marginHorizontal="@dimen/_10sdp"
                 android:layout_marginTop="@dimen/_10sdp"
                 android:background="@drawable/bg_card"
-                android:orientation="vertical"
-                android:padding="@dimen/_10sdp"
                 android:clickable="true"
                 android:focusable="true"
                 android:foreground="?attr/selectableItemBackground"
+                android:orientation="vertical"
+                android:padding="@dimen/_10sdp"
                 app:layout_constraintTop_toBottomOf="@+id/reportSection"
                 tools:ignore="MissingConstraints">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
 
                     <TextView
                         android:layout_width="0dp"
@@ -873,8 +856,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/_10sdp"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
 
                     <TextView
                         android:id="@+id/tvCurrentWeight"
@@ -908,8 +891,7 @@
         android:layout_height="wrap_content"
         android:background="@color/white"
         android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="parent"
-       >
+        app:layout_constraintBottom_toBottomOf="parent">
 
 
         <include layout="@layout/ads_shimmer_native_no_media" />
@@ -921,8 +903,7 @@
         android:layout_height="wrap_content"
         android:background="@color/white"
         android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="parent"
-        >
+        app:layout_constraintBottom_toBottomOf="parent">
 
     </FrameLayout>
 

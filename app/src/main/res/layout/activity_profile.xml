@@ -9,22 +9,27 @@
     <LinearLayout
         android:id="@+id/headerBar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="@dimen/_70sdp"
         android:background="@drawable/bg_header_blue"
+        android:backgroundTint="#1E6BE6"
+        android:gravity="bottom"
         android:orientation="horizontal"
         android:paddingHorizontal="@dimen/_15sdp"
         android:paddingVertical="@dimen/_12sdp"
-        android:gravity="center_vertical"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" >
 
         <TextView
-            android:layout_width="0dp"
+            android:id="@+id/tvProfile"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:fontFamily="@font/montserrat_bold"
             android:text="Profile"
-            android:textColor="#FFFFFF"
-            android:textSize="@dimen/_20sdp" />
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            />
+
     </LinearLayout>
 
     <!-- ViewPager2 for fragments -->

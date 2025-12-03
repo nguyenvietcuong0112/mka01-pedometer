@@ -115,7 +115,7 @@
             android:id="@+id/icon_achievement"
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:src="@drawable/ic_nav_achievement_unselected" />
+            android:src="@drawable/ic_step_achievement_unselected" />
 
         <TextView
             android:id="@+id/text_achievement"

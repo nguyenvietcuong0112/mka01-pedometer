@@ -90,7 +90,6 @@ public class HomeFragment extends Fragment {
     private ImageButton editGoalButton;
     private LinearLayout viewReportButton;
     private ProgressBar progressBar;
-    private ImageButton settingsButton;
     private ImageView settingDailyStep;
     private boolean isTracking = false;
     private SensorManager sensorManager;
@@ -172,7 +171,6 @@ public class HomeFragment extends Fragment {
         distanceText = rootView.findViewById(R.id.distanceText);
         startStopButton = rootView.findViewById(R.id.startStopButton);
         progressBar = rootView.findViewById(R.id.progressBar);
-        settingsButton = rootView.findViewById(R.id.settingsButton);
         settingDailyStep = rootView.findViewById(R.id.settingsDailyStep);
 
         frAds = rootView.findViewById(R.id.frAds);
@@ -458,11 +456,6 @@ public class HomeFragment extends Fragment {
         }
 
 
-        settingsButton.setOnClickListener(v -> {
-            if (requireActivity() instanceof MainActivity) {
-                ((MainActivity) requireActivity()).loadFragment(com.pedometer.steptracker.runwalk.dailytrack.utils.BottomNavigationHelper.NAV_SETTINGS);
-            }
-        });
 
         settingDailyStep.setOnClickListener(v -> {
             Intent intent = new Intent(requireContext(), StepGoalActivity.class);

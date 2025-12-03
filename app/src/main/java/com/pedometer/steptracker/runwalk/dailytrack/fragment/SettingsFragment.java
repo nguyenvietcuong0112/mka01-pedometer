@@ -40,8 +40,6 @@ public class SettingsFragment extends Fragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        binding.ivBack.setVisibility(View.GONE);
-
         // Setup profile section
         setupProfileSection();
 

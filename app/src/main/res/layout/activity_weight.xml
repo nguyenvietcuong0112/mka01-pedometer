@@ -10,21 +10,23 @@
     <LinearLayout
         android:id="@+id/headerBar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="@dimen/_70sdp"
         android:background="@drawable/bg_header_blue"
         android:orientation="horizontal"
+        android:backgroundTint="@color/blue"
         android:paddingHorizontal="@dimen/_15sdp"
         android:paddingVertical="@dimen/_12sdp"
-        android:gravity="center_vertical"
+        android:gravity="bottom"
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
             android:id="@+id/ivBack"
             android:layout_width="24dp"
             android:layout_height="24dp"
+            android:layout_marginBottom="@dimen/_5sdp"
             android:layout_marginEnd="@dimen/_15sdp"
             android:src="@drawable/ic_back"
-            android:tint="#FFFFFF"
+            android:tint="@color/white"
             android:clickable="true"
             android:focusable="true"
             android:foreground="?attr/selectableItemBackground" />
@@ -36,19 +38,20 @@
             android:fontFamily="@font/montserrat_bold"
             android:text="Weight"
             android:textColor="#FFFFFF"
-            android:textSize="@dimen/_20sdp" />
+            android:textSize="@dimen/_18sdp" />
 
-        <Button
+        <TextView
             android:id="@+id/btnReset"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/bg_reset_button"
             android:fontFamily="@font/montserrat_bold"
+            android:layout_gravity="bottom"
             android:text="Reset"
-            android:textColor="#5F7DED"
+            android:textColor="@color/white"
             android:textSize="12sp"
-            android:paddingHorizontal="@dimen/_12sdp"
-            android:paddingVertical="@dimen/_8sdp" />
+            android:paddingHorizontal="@dimen/_15sdp"
+            android:paddingVertical="@dimen/_5sdp" />
     </LinearLayout>
 
     <androidx.core.widget.NestedScrollView
@@ -153,13 +156,15 @@
                 </LinearLayout>
             </FrameLayout>
 
-            <Button
+            <TextView
                 android:id="@+id/btnEditGoalMain"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginTop="@dimen/_20sdp"
                 android:background="@drawable/bg_view_report_button"
+                android:backgroundTint="@color/blue"
                 android:fontFamily="@font/montserrat_bold"
+                android:gravity="center"
                 android:text="Edit Goal"
                 android:textColor="#FFFFFF"
                 android:textSize="16sp"

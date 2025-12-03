@@ -10,10 +10,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.GridLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
@@ -23,7 +21,6 @@ import com.pedometer.steptracker.runwalk.dailytrack.model.DatabaseHelper;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -166,7 +163,7 @@ public class AchievementFragment extends Fragment {
             TextView title = item.findViewById(R.id.text_badge_title);
 
             boolean isUnlocked = unlocked.get(i);
-            icon.setImageResource(isUnlocked ? R.drawable.ic_nav_achievement : R.drawable.ic_nav_achievement_unselected);
+            icon.setImageResource(isUnlocked ? R.drawable.ic_step_achievement : R.drawable.ic_step_achievement_unselected);
 
             String text;
             if (isStepsMode) {

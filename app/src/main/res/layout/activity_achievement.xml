@@ -10,38 +10,37 @@
         android:id="@+id/appbar"
         android:layout_width="match_parent"
         android:layout_height="@dimen/_70sdp"
+        android:background="@drawable/bg_header_blue"
+        android:gravity="bottom"
         android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingStart="@dimen/_10sdp"
-        android:paddingEnd="@dimen/_10sdp"
+        android:backgroundTint="@color/blue"
+        android:paddingHorizontal="@dimen/_15sdp"
+        android:paddingVertical="@dimen/_12sdp"
         app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
+        <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:fontFamily="@font/montserrat_bold"
-            android:text="Achievement"
-            android:textColor="@color/black"
-            android:textSize="@dimen/_20sdp" />
+            android:src="@drawable/img_pedometer"
+            />
     </LinearLayout>
 
     <!-- Content -->
     <ScrollView
         android:id="@+id/scrollView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:fillViewport="true"
         app:layout_constraintTop_toBottomOf="@id/appbar"
-        app:layout_constraintBottom_toTopOf="@id/bottomNavigation"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingStart="24dp"
-            android:paddingEnd="24dp"
+            android:paddingHorizontal="@dimen/_10sdp"
             android:paddingTop="16dp"
             android:paddingBottom="24dp">
 
@@ -49,8 +48,8 @@
             <LinearLayout
                 android:id="@+id/tabContainer"
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:background="#F2F4F7"
+                android:layout_height="50dp"
+                android:background="@color/transparent"
                 android:orientation="horizontal"
                 android:padding="4dp"
                 android:gravity="center_vertical"
@@ -66,6 +65,7 @@
                     android:background="@drawable/bg_tab_left_selected"
                     android:gravity="center"
                     android:text="Step"
+                    android:layout_marginEnd="@dimen/_3sdp"
                     android:textColor="@color/white"
                     android:textSize="14sp"
                     android:fontFamily="@font/montserrat_medium" />
@@ -75,6 +75,7 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
+                    android:layout_marginStart="@dimen/_3sdp"
                     android:background="@drawable/bg_tab_right_unselected"
                     android:gravity="center"
                     android:text="Combo day"
@@ -86,16 +87,19 @@
             <!-- Trophy + current value -->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="@dimen/_180sdp"
                 android:orientation="vertical"
-                android:gravity="center_horizontal"
+                android:background="@drawable/bg_welcome"
+                android:gravity="center"
+                android:paddingTop="@dimen/_20sdp"
+                android:layout_gravity="center_vertical"
                 android:layout_marginBottom="16dp">
 
                 <ImageView
                     android:id="@+id/img_trophy"
                     android:layout_width="80dp"
                     android:layout_height="80dp"
-                    android:src="@drawable/ic_nav_achievement" />
+                    android:src="@drawable/ic_step_achievement" />
 
                 <TextView
                     android:id="@+id/label_current"
@@ -105,7 +109,7 @@
                     android:text="Current steps"
                     android:textColor="#666666"
                     android:textSize="14sp"
-                    android:fontFamily="@font/montserrat_regular" />
+                    android:fontFamily="@font/montserrat_bold" />
 
                 <TextView
                     android:id="@+id/text_current_value"

@@ -10,7 +10,7 @@
     <string name="min">Min</string>
     <string name="km">Km</string>
     <string name="target_steps_format">Target: %1$d steps</string>
-    <string name="monthly_steps_format">You have walked %d steps</string>
+    <string name="monthly_steps_format">%d steps</string>
     <string name="monthly_kcal_format">%.2f</string>
     <string name="monthly_time_format">%s</string>
     <string name="monthly_distance_format">%.2f</string>

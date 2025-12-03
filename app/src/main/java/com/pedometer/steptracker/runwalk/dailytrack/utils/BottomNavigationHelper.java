@@ -136,7 +136,7 @@ public class BottomNavigationHelper {
                 icon.setImageResource(R.drawable.ic_nav_report_unselected);
                 text.setTextColor(0xFFB0B0B0);
             } else if (parentId == R.id.nav_achievement) {
-                icon.setImageResource(R.drawable.ic_nav_achievement_unselected);
+                icon.setImageResource(R.drawable.ic_step_achievement_unselected);
                 text.setTextColor(0xFFB0B0B0);
             } else if (parentId == R.id.nav_settings) {
                 icon.setImageResource(R.drawable.ic_nav_settings_unselected);

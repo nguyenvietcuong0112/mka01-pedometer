@@ -154,8 +154,6 @@ public class ReportFragment extends Fragment {
         frAds = rootView.findViewById(R.id.frAds);
         frAdsBanner = rootView.findViewById(R.id.fr_ads_banner);
         statisticSpinner = rootView.findViewById(R.id.statisticSpinner);
-        ImageView backButton = rootView.findViewById(R.id.iv_back);
-        backButton.setVisibility(View.GONE);
     }
 
     private void setupSpinners() {

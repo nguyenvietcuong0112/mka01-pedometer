@@ -12,6 +12,7 @@
         android:layout_height="@dimen/_70sdp"
         android:background="@drawable/bg_header_blue"
         android:gravity="bottom"
+        android:backgroundTint="@color/blue"
         android:orientation="horizontal"
         android:paddingHorizontal="@dimen/_15sdp"
         android:paddingVertical="@dimen/_12sdp"
@@ -45,7 +46,7 @@
             <com.google.android.gms.maps.MapView
                 android:id="@+id/activityMapView"
                 android:layout_width="match_parent"
-                android:layout_height="260dp"
+                android:layout_height="300dp"
                 android:clipToOutline="true"
                 tools:context=".fragment.ActivityFragment" />
 
@@ -269,6 +270,7 @@
                     android:textColor="@color/white"
                     app:backgroundTint="@color/colorPrimary" />
 
+
                 <ImageView
                     android:id="@+id/activityPauseButton"
                     android:layout_width="@dimen/_70sdp"
@@ -299,190 +301,198 @@
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/recentHeader"
+                android:id="@+id/listRecent"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingHorizontal="@dimen/_10sdp"
-                android:layout_marginTop="@dimen/_20sdp"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:fontFamily="@font/montserrat_bold"
-                    android:text="@string/recent_activity"
-                    android:textColor="@color/black"
-                    android:textSize="18sp" />
-
-                <TextView
-                    android:id="@+id/activityViewMore"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/montserrat_regular"
-                    android:text="@string/view_more"
-                    android:textColor="@color/grey"
-                    android:textSize="14sp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:id="@+id/activityRecentCard"
-                android:padding="@dimen/_10sdp">
-
+                android:orientation="vertical">
                 <LinearLayout
+                    android:id="@+id/recentHeader"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:background="@drawable/bg_green_banner"
                     android:paddingHorizontal="@dimen/_10sdp"
-                    android:paddingVertical="@dimen/_10sdp"
+                    android:layout_marginTop="@dimen/_20sdp"
+                    android:gravity="center_vertical"
                     android:orientation="horizontal">
 
-                    <ImageView
-                        android:layout_width="44dp"
-                        android:layout_height="44dp"
-                        android:layout_gravity="center_vertical"
-                        android:background="@drawable/bg_circle_light"
-                        android:src="@drawable/ic_running" />
-
-                    <LinearLayout
+                    <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="12dp"
                         android:layout_weight="1"
-                        android:orientation="vertical">
+                        android:fontFamily="@font/montserrat_bold"
+                        android:text="@string/recent_activity"
+                        android:textColor="@color/black"
+                        android:textSize="18sp" />
 
-                        <TextView
-                            android:id="@+id/activityRecentTitle"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/montserrat_bold"
-                            android:text="@string/recent_activity_placeholder_title"
-                            android:textColor="@color/black"
-                            android:textSize="12sp" />
-
-                        <TextView
-                            android:id="@+id/activityRecentTime"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:alpha="0.7"
-                            android:fontFamily="@font/montserrat_regular"
-                            android:text="@string/recent_activity_placeholder_time"
-                            android:textColor="@color/grey"
-                            android:textSize="12sp" />
-                    </LinearLayout>
+                    <TextView
+                        android:id="@+id/activityViewMore"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/montserrat_regular"
+                        android:text="@string/view_more"
+                        android:textColor="@color/grey"
+                        android:textSize="14sp" />
                 </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:gravity="center"
-                    android:orientation="horizontal">
+                    android:orientation="vertical"
+                    android:id="@+id/activityRecentCard"
+                    android:padding="@dimen/_10sdp">
 
                     <LinearLayout
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
+                        android:gravity="center_vertical"
+                        android:background="@drawable/bg_green_banner"
+                        android:paddingHorizontal="@dimen/_10sdp"
                         android:paddingVertical="@dimen/_10sdp"
-                        android:gravity="center"
-                        android:layout_marginEnd="@dimen/_5sdp"
-                        android:background="@drawable/bg_card_home"
-                        android:orientation="vertical">
+                        android:orientation="horizontal">
 
-                        <TextView
-                            android:id="@+id/activityRecentCalories"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/montserrat_bold"
-                            android:text="0.00"
-                            android:textColor="@color/black"
-                            android:textSize="14sp" />
+                        <ImageView
+                            android:layout_width="44dp"
+                            android:layout_height="44dp"
+                            android:layout_gravity="center_vertical"
+                            android:background="@drawable/bg_circle_light"
+                            android:src="@drawable/ic_running" />
 
-                        <TextView
-                            android:layout_width="wrap_content"
+                        <LinearLayout
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:alpha="0.6"
-                            android:fontFamily="@font/montserrat_regular"
-                            android:text="@string/kcal"
-                            android:textColor="@color/black"
-                            android:textSize="12sp" />
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/activityRecentTitle"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/montserrat_bold"
+                                android:text="@string/recent_activity_placeholder_title"
+                                android:textColor="@color/black"
+                                android:textSize="12sp" />
+
+                            <TextView
+                                android:id="@+id/activityRecentTime"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:alpha="0.7"
+                                android:fontFamily="@font/montserrat_regular"
+                                android:text="@string/recent_activity_placeholder_time"
+                                android:textColor="@color/grey"
+                                android:textSize="12sp" />
+                        </LinearLayout>
                     </LinearLayout>
 
                     <LinearLayout
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
+                        android:layout_marginTop="16dp"
                         android:gravity="center"
-                        android:paddingVertical="@dimen/_10sdp"
-                        android:layout_marginEnd="@dimen/_5sdp"
-                        android:background="@drawable/bg_card_home"
-                        android:orientation="vertical">
+                        android:orientation="horizontal">
 
-                        <TextView
-                            android:id="@+id/activityRecentDuration"
-                            android:layout_width="wrap_content"
+                        <LinearLayout
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:fontFamily="@font/montserrat_bold"
-                            android:text="00:00:00"
-                            android:textColor="@color/black"
-                            android:textSize="14sp" />
+                            android:layout_weight="1"
+                            android:paddingVertical="@dimen/_10sdp"
+                            android:gravity="center"
+                            android:layout_marginEnd="@dimen/_5sdp"
+                            android:background="@drawable/bg_card_home"
+                            android:orientation="vertical">
 
-                        <TextView
-                            android:layout_width="wrap_content"
+                            <TextView
+                                android:id="@+id/activityRecentCalories"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/montserrat_bold"
+                                android:text="0.00"
+                                android:textColor="@color/black"
+                                android:textSize="14sp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:alpha="0.6"
+                                android:fontFamily="@font/montserrat_regular"
+                                android:text="@string/kcal"
+                                android:textColor="@color/black"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:alpha="0.6"
-                            android:fontFamily="@font/montserrat_regular"
-                            android:text="@string/min"
-                            android:textColor="@color/black"
-                            android:textSize="12sp" />
-                    </LinearLayout>
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:paddingVertical="@dimen/_10sdp"
+                            android:layout_marginEnd="@dimen/_5sdp"
+                            android:background="@drawable/bg_card_home"
+                            android:orientation="vertical">
 
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:paddingVertical="@dimen/_10sdp"
-                        android:background="@drawable/bg_card_home"
-                        android:orientation="vertical">
+                            <TextView
+                                android:id="@+id/activityRecentDuration"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/montserrat_bold"
+                                android:text="00:00:00"
+                                android:textColor="@color/black"
+                                android:textSize="14sp" />
 
-                        <TextView
-                            android:id="@+id/activityRecentDistance"
-                            android:layout_width="wrap_content"
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:alpha="0.6"
+                                android:fontFamily="@font/montserrat_regular"
+                                android:text="@string/min"
+                                android:textColor="@color/black"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:fontFamily="@font/montserrat_bold"
-                            android:text="0.00"
-                            android:textColor="@color/black"
-                            android:textSize="14sp" />
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:paddingVertical="@dimen/_10sdp"
+                            android:background="@drawable/bg_card_home"
+                            android:orientation="vertical">
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:alpha="0.6"
-                            android:fontFamily="@font/montserrat_regular"
-                            android:text="@string/km"
-                            android:textColor="@color/black"
-                            android:textSize="12sp" />
+                            <TextView
+                                android:id="@+id/activityRecentDistance"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/montserrat_bold"
+                                android:text="0.00"
+                                android:textColor="@color/black"
+                                android:textSize="14sp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:alpha="0.6"
+                                android:fontFamily="@font/montserrat_regular"
+                                android:text="@string/km"
+                                android:textColor="@color/black"
+                                android:textSize="12sp" />
+                        </LinearLayout>
                     </LinearLayout>
                 </LinearLayout>
+
+                <TextView
+                    android:id="@+id/activityEmptyRecentText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:gravity="center"
+                    android:padding="12dp"
+                    android:text="@string/recent_activity_empty"
+                    android:textColor="@color/gray_600"
+                    android:textSize="14sp"
+                    android:visibility="gone" />
             </LinearLayout>
 
-            <TextView
-                android:id="@+id/activityEmptyRecentText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:gravity="center"
-                android:padding="12dp"
-                android:text="@string/recent_activity_empty"
-                android:textColor="@color/gray_600"
-                android:textSize="14sp"
-                android:visibility="gone" />
+
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 

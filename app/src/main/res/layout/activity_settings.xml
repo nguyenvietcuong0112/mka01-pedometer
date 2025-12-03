@@ -8,35 +8,25 @@
     android:orientation="vertical"
     android:background="#FFFFFF">
 
+    <!-- App bar -->
     <LinearLayout
         android:id="@+id/appbar"
         android:layout_width="match_parent"
         android:layout_height="@dimen/_70sdp"
-        android:layout_alignParentTop="true"
-        android:orientation="horizontal">
+        android:background="@drawable/bg_header_blue"
+        android:gravity="bottom"
+        android:orientation="horizontal"
+        android:backgroundTint="@color/blue"
+        android:paddingHorizontal="@dimen/_15sdp"
+        android:paddingVertical="@dimen/_12sdp"
+        app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
-            android:id="@+id/iv_back"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:layout_marginStart="@dimen/_10sdp"
-            android:layout_marginEnd="@dimen/_80sdp"
-            android:layout_marginBottom="@dimen/_10sdp"
-            android:src="@drawable/ic_back" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:layout_marginBottom="2dp"
-            android:fontFamily="@font/montserrat_bold"
-            android:gravity="bottom"
-            android:text="Settings"
-            android:textColor="@color/black"
-            android:textSize="@dimen/_20sdp" />
+            android:src="@drawable/img_pedometer"
+            />
     </LinearLayout>
-
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -53,17 +43,25 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="@dimen/_12sdp"
             android:layout_marginBottom="@dimen/_8sdp"
-            android:background="@drawable/bg_card"
+            android:background="@color/transparent"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:padding="@dimen/_12sdp">
+           >
 
-            <ImageView
-                android:id="@+id/ivProfileAvatar"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:src="@drawable/ic_female_avatar"
-                android:contentDescription="Profile" />
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_gender_circle_selected"
+                android:padding="@dimen/_5sdp"
+                >
+                <ImageView
+                    android:id="@+id/ivProfileAvatar"
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:src="@drawable/ic_female_avatar"
+                    android:contentDescription="Profile" />
+
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/tvProfileName"
