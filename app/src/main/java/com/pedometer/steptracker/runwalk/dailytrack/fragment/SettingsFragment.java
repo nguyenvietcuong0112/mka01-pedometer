@@ -17,7 +17,9 @@ import com.mallegan.ads.util.Admob;
 import com.mallegan.ads.util.AppOpenManager;
 import com.pedometer.steptracker.runwalk.dailytrack.R;
 import com.pedometer.steptracker.runwalk.dailytrack.activity.LanguageActivity;
+import com.pedometer.steptracker.runwalk.dailytrack.activity.ProfileActivity;
 import com.pedometer.steptracker.runwalk.dailytrack.databinding.ActivitySettingsBinding;
+import com.pedometer.steptracker.runwalk.dailytrack.utils.ProfileDataManager;
 import com.pedometer.steptracker.runwalk.dailytrack.utils.SharePreferenceUtils;
 
 import java.util.Timer;
@@ -39,6 +41,9 @@ public class SettingsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         binding.ivBack.setVisibility(View.GONE);
+
+        // Setup profile section
+        setupProfileSection();
 
         binding.btnShare.setOnClickListener(v -> {
             if (isBtnProcessing) return;
@@ -115,6 +120,38 @@ public class SettingsFragment extends Fragment {
         } else {
             binding.frAds.setVisibility(View.GONE);
             binding.frAds.removeAllViews();
+        }
+    }
+
+    private void setupProfileSection() {
+        String name = ProfileDataManager.getName(requireContext());
+        String gender = ProfileDataManager.getGender(requireContext());
+        
+        if (binding.btnProfile != null) {
+            if (!name.isEmpty()) {
+                if (binding.tvProfileName != null) {
+                    binding.tvProfileName.setText(name);
+                }
+            } else {
+                if (binding.tvProfileName != null) {
+                    binding.tvProfileName.setText("About me");
+                }
+            }
+
+            // Set avatar based on gender
+            if (binding.ivProfileAvatar != null) {
+                if (gender.equals("male")) {
+                    binding.ivProfileAvatar.setImageResource(R.drawable.ic_male_avatar);
+                } else {
+                    binding.ivProfileAvatar.setImageResource(R.drawable.ic_female_avatar);
+                }
+            }
+
+            binding.btnProfile.setOnClickListener(v -> {
+                Intent intent = new Intent(requireContext(), ProfileActivity.class);
+                intent.putExtra("edit_mode", true); // Set edit mode
+                startActivity(intent);
+            });
         }
     }
 }

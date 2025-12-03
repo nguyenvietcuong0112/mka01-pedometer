@@ -45,8 +45,10 @@ import com.mallegan.ads.util.Admob;
 import com.pedometer.steptracker.runwalk.dailytrack.R;
 import com.pedometer.steptracker.runwalk.dailytrack.activity.MainActivity;
 import com.pedometer.steptracker.runwalk.dailytrack.activity.StepGoalActivity;
+import com.pedometer.steptracker.runwalk.dailytrack.activity.WeightActivity;
 import com.pedometer.steptracker.runwalk.dailytrack.model.DatabaseHelper;
 import com.pedometer.steptracker.runwalk.dailytrack.utils.CustomBottomSheetDialogExitFragment;
+import com.pedometer.steptracker.runwalk.dailytrack.utils.ProfileDataManager;
 import com.pedometer.steptracker.runwalk.dailytrack.utils.SharePreferenceUtils;
 
 import java.text.SimpleDateFormat;
@@ -107,6 +109,8 @@ public class HomeFragment extends Fragment {
     private Runnable timeUpdater;
     private ImageView mondayGoal, tuesdayGoal, wednesdayGoal, thursdayGoal, fridayGoal, saturdayGoal, sundayGoal;
     private TextView stepsTextView, kcalTextView, kmTextView, hoursTextView;
+    private TextView tvCurrentWeight, tvWeightGoal;
+    private LinearLayout weightSection;
 
     private FrameLayout frAds, frAdsBanner;
 
@@ -188,6 +192,9 @@ public class HomeFragment extends Fragment {
         hoursTextView = rootView.findViewById(R.id.hoursTextView);
         kcalTextView = rootView.findViewById(R.id.kcalTextView);
         kmTextView = rootView.findViewById(R.id.kmTextView);
+        tvCurrentWeight = rootView.findViewById(R.id.tvCurrentWeight);
+        tvWeightGoal = rootView.findViewById(R.id.tvWeightGoal);
+        weightSection = rootView.findViewById(R.id.weightSection);
 
 
         startStopButtonCircle = rootView.findViewById(R.id.startStopButton);
@@ -202,6 +209,35 @@ public class HomeFragment extends Fragment {
 
         updateDailyGoals();
         showMonthlyReport();
+        setupWeightSection();
+    }
+
+    private void setupWeightSection() {
+        float weight = ProfileDataManager.getWeight(requireContext());
+        float weightGoal = ProfileDataManager.getWeightGoal(requireContext());
+
+        if (tvCurrentWeight != null) {
+            if (weight > 0) {
+                tvCurrentWeight.setText(String.format(Locale.getDefault(), "%.1f", weight));
+            } else {
+                tvCurrentWeight.setText("0.0");
+            }
+        }
+
+        if (tvWeightGoal != null) {
+            if (weightGoal > 0) {
+                tvWeightGoal.setText(String.format(Locale.getDefault(), "Goal: %.1fkg", weightGoal));
+            } else {
+                tvWeightGoal.setText("Goal: 0.0kg");
+            }
+        }
+
+        if (weightSection != null) {
+            weightSection.setOnClickListener(v -> {
+                Intent intent = new Intent(requireContext(), WeightActivity.class);
+                startActivity(intent);
+            });
+        }
     }
 
     private void loadNativeBanner() {
@@ -750,6 +786,7 @@ public class HomeFragment extends Fragment {
         super.onResume();
         loadNativeBanner();
         loadTodayData();
+        setupWeightSection();
         updateTargetText();
         if (isTracking) {
             startStepTracking();

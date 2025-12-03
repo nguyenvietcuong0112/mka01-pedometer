@@ -166,7 +166,8 @@ public class PermissionActivity extends AppCompatActivity {
     }
 
     private void goToMain() {
-        Intent intent = new Intent(this, MainActivity.class);
+        // Navigate to ProfileActivity first, then it will navigate to MainActivity
+        Intent intent = new Intent(this, ProfileActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
         finish();

@@ -16,6 +16,8 @@
     <string name="monthly_distance_format">%.2f</string>
     <string name="activity_title">Activity</string>
     <string name="start_tracking">Start</string>
+    <string name="start_running">Start Running</string>
+    <string name="back">Back</string>
     <string name="pause_tracking">Pause</string>
     <string name="resume_tracking">Resume</string>
     <string name="finish_tracking">Finish</string>

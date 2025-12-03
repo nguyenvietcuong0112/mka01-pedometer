@@ -58,6 +58,21 @@
             android:theme="@style/Theme.Design.NoActionBar" />
 
         <activity
+            android:name=".activity.ProfileActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Design.NoActionBar" />
+
+        <activity
+            android:name=".activity.WeightActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Design.NoActionBar" />
+
+        <activity
+            android:name=".activity.RunningActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Design.NoActionBar" />
+
+        <activity
             android:name=".activity.StepGoalActivity"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.Design.NoActionBar" />

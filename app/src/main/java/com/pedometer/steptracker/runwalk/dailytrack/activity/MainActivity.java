@@ -40,6 +40,14 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        // Nếu chưa hoàn thành profile thì chuyển sang ProfileActivity
+        if (!com.pedometer.steptracker.runwalk.dailytrack.utils.ProfileDataManager.isProfileCompleted(this)) {
+            Intent intent = new Intent(this, ProfileActivity.class);
+            startActivity(intent);
+            finish();
+            return;
+        }
+
         setContentView(R.layout.activity_main);
 
         startStepServiceIfNeeded();
@@ -80,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
             case BottomNavigationHelper.NAV_ACTIVITY:
                 fragment = getSupportFragmentManager().findFragmentByTag(TAG_ACTIVITY);
                 if (fragment == null) {
-                    fragment = new ActivityFragment();
+                    fragment = ActivityFragment.newInstance(false);
                 }
                 tag = TAG_ACTIVITY;
                 break;

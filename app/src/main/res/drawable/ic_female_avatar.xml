@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="80dp"
+    android:height="80dp"
+    android:viewportWidth="80"
+    android:viewportHeight="80">
+    <!-- Female avatar - simplified version -->
+    <path
+        android:fillColor="#FF69B4"
+        android:pathData="M40,20 C30,20 22,28 22,38 C22,48 30,56 40,56 C50,56 58,48 58,38 C58,28 50,20 40,20 Z"/>
+    <path
+        android:fillColor="#8B4513"
+        android:pathData="M30,25 L30,35 L50,35 L50,25 Z"/>
+    <path
+        android:fillColor="#FF69B4"
+        android:pathData="M25,50 L25,60 L55,60 L55,50 Z"/>
+</vector>
+
