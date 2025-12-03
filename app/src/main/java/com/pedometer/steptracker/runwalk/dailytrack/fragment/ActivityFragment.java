@@ -13,6 +13,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -174,9 +175,7 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
         }
     };
 
-    public ActivityFragment() {
-        // Required empty constructor
-    }
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -192,6 +191,12 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
                     if ((fineLocationGranted != null && fineLocationGranted)
                             || (coarseLocationGranted != null && coarseLocationGranted)) {
                         enableMyLocationLayer();
+
+                        // Di chuyển tới vị trí hiện tại sau khi có quyền
+                        if (googleMap != null) {
+                            moveToCurrentLocation();
+                        }
+
                         if (trackingState == TrackingState.RUNNING) {
                             startLocationUpdates();
                         }
@@ -772,13 +777,18 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
 
     @SuppressLint("MissingPermission")
     private void enableMyLocationLayer() {
-        if (googleMap != null && hasLocationPermission()) {
+        if (googleMap == null) return;
+
+        if (hasLocationPermission()) {
             try {
                 googleMap.setMyLocationEnabled(true);
-                googleMap.getUiSettings().setMyLocationButtonEnabled(false);
+                googleMap.getUiSettings().setMyLocationButtonEnabled(true); // Cho phép nút my location
             } catch (SecurityException e) {
                 e.printStackTrace();
             }
+        } else {
+            // Tự động request permission khi mở fragment nếu chưa có
+            requestLocationPermission();
         }
     }
 
@@ -792,6 +802,59 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
 
         // Thêm padding nếu cần
         googleMap.setPadding(0, 0, 0, 200);
+
+        moveToCurrentLocation();
+
+
+    }
+
+
+    @SuppressLint("MissingPermission")
+    private void moveToCurrentLocation() {
+        if (!hasLocationPermission() || googleMap == null) {
+            return;
+        }
+
+        try {
+            fusedLocationClient.getLastLocation()
+                    .addOnSuccessListener(requireActivity(), location -> {
+                        if (location != null && googleMap != null) {
+                            LatLng currentLatLng = new LatLng(
+                                    location.getLatitude(),
+                                    location.getLongitude()
+                            );
+
+                            CameraPosition cameraPosition = new CameraPosition.Builder()
+                                    .target(currentLatLng)
+                                    .zoom(FIXED_ZOOM_LEVEL)
+                                    .tilt(30)
+                                    .build();
+
+                            googleMap.animateCamera(
+                                    CameraUpdateFactory.newCameraPosition(cameraPosition),
+                                    800,
+                                    null
+                            );
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        // Có thể log lỗi hoặc show message nhẹ
+                        Log.e("ActivityFragment", "Failed to get current location", e);
+                    });
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void initLocationOnStart() {
+        if (hasLocationPermission() && googleMap != null) {
+            // Đã có permission và map ready
+            moveToCurrentLocation();
+        } else if (!hasLocationPermission() && googleMap != null) {
+            // Chưa có permission, request và sẽ move sau khi có permission
+            requestLocationPermission();
+        }
+        // Trường hợp map chưa ready sẽ xử lý trong onMapReady
     }
 
     @Override
@@ -800,6 +863,12 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
         if (mapView != null) {
             mapView.onResume();
         }
+
+        // Cập nhật vị trí hiện tại khi quay lại fragment
+        if (googleMap != null && hasLocationPermission()) {
+            moveToCurrentLocation();
+        }
+
         // Nếu đang RUNNING, cần đảm bảo listener được đăng ký
         if (sensorManager != null && stepSensor != null && trackingState == TrackingState.RUNNING) {
             sensorManager.registerListener(stepSensorListener, stepSensor, SensorManager.SENSOR_DELAY_UI);

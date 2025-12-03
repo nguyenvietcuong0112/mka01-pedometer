@@ -51,7 +51,6 @@ public class SplashActivity extends BaseActivity {
         SystemConfiguration.setStatusBarColor(this, R.color.transparent, SystemConfiguration.IconColor.ICON_DARK);
         setContentView(binding.getRoot());
 
-        proceedToNextActivity();
         interCallback = new InterCallback() {
 
             @Override
