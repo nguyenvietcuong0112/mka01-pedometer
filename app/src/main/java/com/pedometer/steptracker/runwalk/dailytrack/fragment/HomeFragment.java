@@ -27,6 +27,8 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.Nullable;
@@ -80,7 +82,11 @@ public class HomeFragment extends Fragment {
     // UI
     private TextView stepCountText, targetText, remainingText;
     private TextView kcalText, timeText, distanceText;
-    private LinearLayout startStopButton;
+    private TextView goalStepsText;
+    private ImageButton startStopButton;
+    private ImageButton startStopButtonCircle;
+    private ImageButton editGoalButton;
+    private LinearLayout viewReportButton;
     private ProgressBar progressBar;
     private ImageButton settingsButton;
     private ImageView settingDailyStep;
@@ -101,9 +107,9 @@ public class HomeFragment extends Fragment {
     private Runnable timeUpdater;
     private ImageView mondayGoal, tuesdayGoal, wednesdayGoal, thursdayGoal, fridayGoal, saturdayGoal, sundayGoal;
     private TextView stepsTextView, kcalTextView, kmTextView, hoursTextView;
-    private TextView tvPlay;
+
     private FrameLayout frAds, frAdsBanner;
-    private ImageView icPlay;
+
     private float[] gravity = new float[3];
     private float[] linear_acceleration = new float[3];
     private long lastStepTime = 0;
@@ -183,12 +189,15 @@ public class HomeFragment extends Fragment {
         kcalTextView = rootView.findViewById(R.id.kcalTextView);
         kmTextView = rootView.findViewById(R.id.kmTextView);
 
-        tvPlay = rootView.findViewById(R.id.tv_play);
-        icPlay = rootView.findViewById(R.id.ic_play);
+
+        startStopButtonCircle = rootView.findViewById(R.id.startStopButton);
+        editGoalButton = rootView.findViewById(R.id.editGoalButton);
+        viewReportButton = rootView.findViewById(R.id.viewReportButton);
+        goalStepsText = rootView.findViewById(R.id.goalStepsText);
 
         stepGoal = getStepGoalForToday();
         progressBar.setMax(stepGoal);
-        targetText.setText(getString(R.string.target_steps_format, stepGoal));
+        updateTargetText();
         databaseHelper = new DatabaseHelper(requireContext());
 
         updateDailyGoals();
@@ -396,18 +405,22 @@ public class HomeFragment extends Fragment {
     }
 
     private void setupClickListeners() {
-        startStopButton.setOnClickListener(v -> {
-            isTracking = !isTracking;
-            if (isTracking) {
-                startStepTracking();
-                tvPlay.setText(R.string.stop);
-                icPlay.setImageResource(R.drawable.ic_pause);
-            } else {
-                stopStepTracking();
-                tvPlay.setText(R.string.continue_text);
-                icPlay.setImageResource(R.drawable.ic_play);
-            }
-        });
+        // Circular play/pause button
+        if (startStopButtonCircle != null) {
+            startStopButtonCircle.setOnClickListener(v -> {
+                isTracking = !isTracking;
+                if (isTracking) {
+                    startStepTracking();
+                    startStopButtonCircle.setImageResource(R.drawable.ic_pause);
+                    startStopButtonCircle.setColorFilter(null); // Clear tint for pause icon (it has built-in color)
+                } else {
+                    stopStepTracking();
+                    startStopButtonCircle.setImageResource(R.drawable.ic_play);
+                    startStopButtonCircle.setColorFilter(new PorterDuffColorFilter(0xFF5F7DED, PorterDuff.Mode.SRC_IN)); // Set blue tint for play icon
+                }
+            });
+        }
+
 
         settingsButton.setOnClickListener(v -> {
             if (requireActivity() instanceof MainActivity) {
@@ -419,6 +432,23 @@ public class HomeFragment extends Fragment {
             Intent intent = new Intent(requireContext(), StepGoalActivity.class);
             startActivity(intent);
         });
+
+        // Edit goal button (circular button at bottom of circle)
+        if (editGoalButton != null) {
+            editGoalButton.setOnClickListener(v -> {
+                Intent intent = new Intent(requireContext(), StepGoalActivity.class);
+                startActivity(intent);
+            });
+        }
+
+        // View Report button
+        if (viewReportButton != null) {
+            viewReportButton.setOnClickListener(v -> {
+                if (requireActivity() instanceof MainActivity) {
+                    ((MainActivity) requireActivity()).loadFragment(com.pedometer.steptracker.runwalk.dailytrack.utils.BottomNavigationHelper.NAV_REPORT);
+                }
+            });
+        }
 
         rootView.findViewById(R.id.details_report).setOnClickListener(v -> {
             if (requireActivity() instanceof MainActivity) {
@@ -595,17 +625,34 @@ public class HomeFragment extends Fragment {
                 stepCountText.setText(String.valueOf(stepCount));
                 progressBar.setProgress(Math.min(stepCount, stepGoal));
 
+                updateTargetText();
+                
                 int remainingSteps = Math.max(0, stepGoal - stepCount);
-                remainingText.setText(getString(R.string.remaining_steps_format, remainingSteps));
+                if (remainingText != null) {
+                    remainingText.setText(getString(R.string.remaining_steps_format, remainingSteps));
+                }
 
                 double kcal = stepCount * KCAL_PER_STEP;
                 double distance = stepCount * KM_PER_STEP;
 
-                kcalText.setText(String.format(Locale.getDefault(), "%.2f", kcal));
-                distanceText.setText(String.format(Locale.getDefault(), "%.2f", distance));
+                if (kcalText != null) {
+                    kcalText.setText(String.format(Locale.getDefault(), "%.2f", kcal));
+                }
+                if (distanceText != null) {
+                    distanceText.setText(String.format(Locale.getDefault(), "%.2f", distance));
+                }
 
                 updateTimeDisplay();
             });
+        }
+    }
+
+    private void updateTargetText() {
+        if (targetText != null) {
+            targetText.setText(String.format(Locale.getDefault(), "%d/%d steps", stepCount, stepGoal));
+        }
+        if (goalStepsText != null) {
+            goalStepsText.setText(String.format(Locale.getDefault(), "%d steps", stepGoal));
         }
     }
 
@@ -647,7 +694,7 @@ public class HomeFragment extends Fragment {
         // update goal and UI
         stepGoal = getStepGoalForToday();
         progressBar.setMax(stepGoal);
-        targetText.setText(getString(R.string.target_steps_format, stepGoal));
+        updateTargetText();
         updateUI();
     }
 
@@ -703,8 +750,18 @@ public class HomeFragment extends Fragment {
         super.onResume();
         loadNativeBanner();
         loadTodayData();
+        updateTargetText();
         if (isTracking) {
             startStepTracking();
+            if (startStopButtonCircle != null) {
+                startStopButtonCircle.setImageResource(R.drawable.ic_pause);
+                startStopButtonCircle.setColorFilter(null);
+            }
+        } else {
+            if (startStopButtonCircle != null) {
+                startStopButtonCircle.setImageResource(R.drawable.ic_play);
+                startStopButtonCircle.setColorFilter(new PorterDuffColorFilter(0xFF5F7DED, PorterDuff.Mode.SRC_IN));
+            }
         }
 
         if (!SharePreferenceUtils.isOrganic(requireContext())) {

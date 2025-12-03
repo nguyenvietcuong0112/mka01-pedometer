@@ -75,7 +75,6 @@ private FrameLayout frAdsBanner;
         setupChart();
         loadAds();
         loadNativeBanner();
-        BottomNavigationHelper.setupBottomNavigation(this, BottomNavigationHelper.NAV_REPORT);
     }
 
     private void loadNativeBanner() {

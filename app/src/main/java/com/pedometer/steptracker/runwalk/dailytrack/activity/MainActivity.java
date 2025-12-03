@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupBottomNavigation() {
-        BottomNavigationHelper.setupBottomNavigationForFragment(this, currentNav);
+        BottomNavigationHelper.setupBottomNavigation(this, currentNav);
     }
 
     public void loadFragment(int nav) {

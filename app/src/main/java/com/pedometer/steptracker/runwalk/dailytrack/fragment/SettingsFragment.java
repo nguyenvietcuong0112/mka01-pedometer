@@ -51,7 +51,7 @@ public class SettingsFragment extends Fragment {
             myIntent.putExtra(Intent.EXTRA_SUBJECT, sub);
             myIntent.putExtra(Intent.EXTRA_TEXT, body);
             startActivity(Intent.createChooser(myIntent, "Share"));
-            AppOpenManager.getInstance().disableAppResumeWithActivity(com.pedometer.steptracker.runwalk.dailytrack.activity.HomeActivity.class);
+//            AppOpenManager.getInstance().disableAppResumeWithActivity(com.pedometer.steptracker.runwalk.dailytrack.activity.HomeActivity.class);
             new Timer().schedule(new TimerTask() {
                 @Override
                 public void run() {
