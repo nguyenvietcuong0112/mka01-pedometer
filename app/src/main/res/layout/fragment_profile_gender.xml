@@ -121,22 +121,26 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
-        <Button
+        <TextView
             android:id="@+id/btnNext"
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:layout_marginBottom="@dimen/_12sdp"
+            android:background="@drawable/bg_card"
             android:fontFamily="@font/montserrat_bold"
             android:text="Next"
-            android:backgroundTint="#1E6BE6"
+            android:gravity="center"
+            android:backgroundTint="@color/blue"
             android:textColor="#FFFFFF"
             android:textSize="16sp" />
 
-        <Button
+        <TextView
             android:id="@+id/btnSkip"
             android:layout_width="match_parent"
             android:layout_height="56dp"
+            android:gravity="center"
             android:fontFamily="@font/montserrat_bold"
+            android:background="@drawable/bg_card"
             android:backgroundTint="#ADADAD"
             android:text="Skip"
             android:textColor="#FFFFFF"

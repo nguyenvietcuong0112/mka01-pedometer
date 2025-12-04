@@ -30,6 +30,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
+import android.graphics.Color;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.Nullable;
@@ -51,6 +52,7 @@ import com.pedometer.steptracker.runwalk.dailytrack.model.DatabaseHelper;
 import com.pedometer.steptracker.runwalk.dailytrack.model.WeightHistoryHelper;
 import com.pedometer.steptracker.runwalk.dailytrack.utils.ArcProgressView;
 import com.pedometer.steptracker.runwalk.dailytrack.utils.CustomBottomSheetDialogExitFragment;
+import com.pedometer.steptracker.runwalk.dailytrack.utils.CustomCircularProgressBar;
 import com.pedometer.steptracker.runwalk.dailytrack.utils.ProfileDataManager;
 import com.pedometer.steptracker.runwalk.dailytrack.utils.SharePreferenceUtils;
 
@@ -86,11 +88,12 @@ public class HomeFragment extends Fragment {
     private TextView stepCountText, targetText, remainingText;
     private TextView kcalText, timeText, distanceText;
     private TextView goalStepsText;
-    private ImageButton startStopButton;
-    private ImageButton startStopButtonCircle;
-    private ImageButton editGoalButton;
+    private ImageView startStopButtonCircle;
+    private ImageView editGoalButton;
     private LinearLayout viewReportButton;
-    private ProgressBar progressBar;
+
+    private View progressBar; // Đổi từ ProgressBar -> View
+    private CustomCircularProgressBar customProgressBar;
     private ImageView settingDailyStep;
     private boolean isTracking = false;
     private SensorManager sensorManager;
@@ -131,6 +134,9 @@ public class HomeFragment extends Fragment {
 
     private static final String PREFS_BASELINE = "pedometer_baselines";
 
+    // animation
+    private ValueAnimator progressAnimator;
+    private int lastAnimatedProgress = 0;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -168,7 +174,6 @@ public class HomeFragment extends Fragment {
         kcalText = rootView.findViewById(R.id.kcalText);
         timeText = rootView.findViewById(R.id.timeText);
         distanceText = rootView.findViewById(R.id.distanceText);
-        startStopButton = rootView.findViewById(R.id.startStopButton);
         progressBar = rootView.findViewById(R.id.progressBar);
         settingDailyStep = rootView.findViewById(R.id.settingsDailyStep);
 
@@ -194,7 +199,7 @@ public class HomeFragment extends Fragment {
         weightSection = rootView.findViewById(R.id.weightSection);
 
         arcView = rootView.findViewById(R.id.arcView);
-        arcView.setSidePaddingDp(50f);
+        if (arcView != null) arcView.setSidePaddingDp(50f);
 
         badgeStar = rootView.findViewById(R.id.badgeStar);
 
@@ -208,7 +213,23 @@ public class HomeFragment extends Fragment {
         goalStepsText = rootView.findViewById(R.id.goalStepsText);
 
         stepGoal = getStepGoalForToday();
-        progressBar.setMax(stepGoal);
+
+        // ensure progressBar set up
+        progressBar = rootView.findViewById(R.id.progressBar);
+        if (progressBar instanceof CustomCircularProgressBar) {
+            customProgressBar = (CustomCircularProgressBar) progressBar;
+        }
+
+        if (customProgressBar != null) {
+            customProgressBar.setProgress(0);
+        } else if (progressBar instanceof ProgressBar) {
+            ProgressBar pb = (ProgressBar) progressBar;
+            pb.setMax(stepGoal);
+            pb.setProgress(0);
+            pb.setIndeterminate(false);
+        }
+        // =============================
+
         updateTargetText();
         databaseHelper = new DatabaseHelper(requireContext());
 
@@ -487,11 +508,10 @@ public class HomeFragment extends Fragment {
                 if (isTracking) {
                     startStepTracking();
                     startStopButtonCircle.setImageResource(R.drawable.ic_pause);
-                    startStopButtonCircle.setColorFilter(null);
                 } else {
                     stopStepTracking();
                     startStopButtonCircle.setImageResource(R.drawable.ic_play);
-                    startStopButtonCircle.setColorFilter(new PorterDuffColorFilter(0xFF5F7DED, PorterDuff.Mode.SRC_IN));
+
                 }
             });
         }
@@ -662,31 +682,97 @@ public class HomeFragment extends Fragment {
     }
 
     private void updateUI() {
-        if (getActivity() != null) {
-            getActivity().runOnUiThread(() -> {
+        if (getActivity() == null) return;
+
+        getActivity().runOnUiThread(() -> {
+
+            // ====== 1. UPDATE STEP TEXT ======
+            if (stepCountText != null) {
                 stepCountText.setText(String.valueOf(stepCount));
-                progressBar.setProgress(Math.min(stepCount, stepGoal));
+            }
 
-                updateTargetText();
+            // ====== 2. ANIMATE PROGRESS ======
+            int targetProgress = Math.min(stepCount, stepGoal);
 
+            // Chỉ animate nếu có thay đổi
+            if (targetProgress != lastAnimatedProgress) {
+                animateProgress(lastAnimatedProgress, targetProgress);
+                lastAnimatedProgress = targetProgress;
+            }
+
+            // ====== 3. UPDATE TARGET (6000 steps, etc.) ======
+            updateTargetText();
+
+            // ====== 4. REMAINING STEPS ======
+            if (remainingText != null) {
                 int remainingSteps = Math.max(0, stepGoal - stepCount);
-                if (remainingText != null) {
-                    remainingText.setText(getString(R.string.remaining_steps_format, remainingSteps));
-                }
+                remainingText.setText(
+                        getString(R.string.remaining_steps_format, remainingSteps)
+                );
+            }
 
-                double kcal = stepCount * KCAL_PER_STEP;
-                double distance = stepCount * KM_PER_STEP;
+            // ====== 5. KCAL & DISTANCE ======
+            double kcal = stepCount * KCAL_PER_STEP;
+            double distance = stepCount * KM_PER_STEP;
 
-                if (kcalText != null) {
-                    kcalText.setText(String.format(Locale.getDefault(), "%.2f", kcal));
-                }
-                if (distanceText != null) {
-                    distanceText.setText(String.format(Locale.getDefault(), "%.2f", distance));
-                }
+            if (kcalText != null) {
+                kcalText.setText(String.format(Locale.getDefault(), "%.2f", kcal));
+            }
 
-                updateTimeDisplay();
+            if (distanceText != null) {
+                distanceText.setText(String.format(Locale.getDefault(), "%.2f", distance));
+            }
+
+            // ====== 6. TIME DISPLAY ======
+            updateTimeDisplay();
+        });
+    }
+
+
+    /**
+     * Animate progressBar from -> to (values are steps count, not percent).
+     * Cancels previous animator if running.
+     */
+    // Trong animateProgress()
+    private void animateProgress(int from, int to) {
+        if (progressBar == null) return;
+
+        if (customProgressBar != null) {
+            // Dùng custom progress bar
+            float fromPercent = (from * 100f) / stepGoal;
+            float toPercent = (to * 100f) / stepGoal;
+
+            if (progressAnimator != null && progressAnimator.isRunning()) {
+                progressAnimator.cancel();
+            }
+
+            progressAnimator = ValueAnimator.ofFloat(fromPercent, toPercent);
+            progressAnimator.setDuration(500);
+            progressAnimator.addUpdateListener(animation -> {
+                float val = (float) animation.getAnimatedValue();
+                customProgressBar.setProgress(val);
             });
+            progressAnimator.start();
+        } else if (progressBar instanceof ProgressBar) {
+            // Dùng ProgressBar thông thường
+            ProgressBar pb = (ProgressBar) progressBar;
+            from = Math.max(0, Math.min(pb.getMax(), from));
+            to = Math.max(0, Math.min(pb.getMax(), to));
+
+            if (progressAnimator != null && progressAnimator.isRunning()) {
+                progressAnimator.cancel();
+            }
+
+            progressAnimator = ValueAnimator.ofInt(from, to);
+            progressAnimator.setDuration(500);
+            progressAnimator.addUpdateListener(animation -> {
+                int val = (int) animation.getAnimatedValue();
+                pb.setProgress(val);
+            });
+            progressAnimator.start();
         }
+
+        lastAnimatedProgress = to;
     }
 
     private void updateTargetText() {
@@ -723,7 +809,18 @@ public class HomeFragment extends Fragment {
         }
 
         stepGoal = getStepGoalForToday();
-        progressBar.setMax(stepGoal);
+
+        if (customProgressBar != null) {
+            float initialPercent = (stepCount * 100f) / stepGoal;
+            customProgressBar.setProgress(initialPercent);
+            lastAnimatedProgress = stepCount;
+        } else if (progressBar instanceof ProgressBar) {
+            ProgressBar pb = (ProgressBar) progressBar;
+            pb.setMax(stepGoal);
+            lastAnimatedProgress = Math.min(stepCount, stepGoal);
+            pb.setProgress(lastAnimatedProgress);
+        }
+
         updateTargetText();
         updateUI();
     }
@@ -781,12 +878,10 @@ public class HomeFragment extends Fragment {
             startStepTracking();
             if (startStopButtonCircle != null) {
                 startStopButtonCircle.setImageResource(R.drawable.ic_pause);
-                startStopButtonCircle.setColorFilter(null);
             }
         } else {
             if (startStopButtonCircle != null) {
                 startStopButtonCircle.setImageResource(R.drawable.ic_play);
-                startStopButtonCircle.setColorFilter(new PorterDuffColorFilter(0xFF5F7DED, PorterDuff.Mode.SRC_IN));
             }
         }
 
@@ -811,6 +906,9 @@ public class HomeFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         handler.removeCallbacks(timeUpdater);
+        if (progressAnimator != null) {
+            progressAnimator.cancel();
+        }
     }
 
     private void checkAndRequestPermissions() {

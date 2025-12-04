@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Thumb when checked -->
+    <item android:state_checked="true">
+        <shape android:shape="oval">
+            <solid android:color="@android:color/white" />
+            <size
+                android:width="24dp"
+                android:height="24dp" />
+        </shape>
+    </item>
+
+    <!-- Thumb when unchecked -->
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="@android:color/white" />
+            <size
+                android:width="24dp"
+                android:height="24dp" />
+        </shape>
+    </item>
+</selector>

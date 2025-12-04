@@ -21,10 +21,39 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/img_pedometer"
-            />
+            android:src="@drawable/img_pedometer" />
 
     </LinearLayout>
+
+    <!-- Loading Overlay cho Map -->
+    <FrameLayout
+        android:id="@+id/mapLoadingOverlay"
+        android:layout_width="0dp"
+        android:layout_height="300dp"
+        android:background="@color/white"
+        android:visibility="visible"
+        app:layout_constraintTop_toBottomOf="@+id/headerBar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ProgressBar
+            android:id="@+id/mapLoadingProgress"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center"
+            android:indeterminateTint="@color/colorPrimary" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="72dp"
+            android:fontFamily="@font/montserrat_regular"
+            android:text="loading map"
+            android:textColor="@color/grey"
+            android:textSize="14sp" />
+
+    </FrameLayout>
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/activityScroll"
@@ -35,20 +64,26 @@
         app:layout_constraintTop_toBottomOf="@+id/headerBar"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-       >
+        app:layout_constraintStart_toStartOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <com.google.android.gms.maps.MapView
-                android:id="@+id/activityMapView"
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="300dp"
-                android:clipToOutline="true"
-                tools:context=".fragment.ActivityFragment" />
+                android:layout_height="300dp">
+
+                <com.google.android.gms.maps.MapView
+                    android:id="@+id/activityMapView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:clipToOutline="true"
+                    android:alpha="0"
+                    tools:context=".fragment.ActivityFragment" />
+
+            </FrameLayout>
 
             <TextView
                 android:id="@+id/activityTimerValue"
@@ -134,7 +169,7 @@
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:layout_gravity="center_horizontal"
-                            android:src="@drawable/ic_fire" />
+                            android:src="@drawable/ic_kcal" />
 
                         <TextView
                             android:id="@+id/activityCaloriesValue"
@@ -178,7 +213,7 @@
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:layout_gravity="center_horizontal"
-                            android:src="@drawable/ic_clock" />
+                            android:src="@drawable/ic_time" />
 
                         <TextView
                             android:id="@+id/activityDurationValue"
@@ -270,16 +305,13 @@
                     android:textColor="@color/white"
                     app:backgroundTint="@color/colorPrimary" />
 
-
                 <ImageView
                     android:id="@+id/activityPauseButton"
                     android:layout_width="@dimen/_70sdp"
                     android:layout_height="@dimen/_70sdp"
                     android:background="@drawable/bg_pause"
                     android:layout_marginStart="8dp"
-                    android:visibility="gone"
-                    android:textAllCaps="false"
-                   />
+                    android:visibility="gone" />
 
                 <androidx.appcompat.widget.AppCompatButton
                     android:id="@+id/activityResumeButton"
@@ -287,8 +319,7 @@
                     android:background="@drawable/bg_resume"
                     android:visibility="gone"
                     android:layout_height="@dimen/_70sdp"
-                    android:layout_marginEnd="8dp"
-                     />
+                    android:layout_marginEnd="8dp" />
 
                 <androidx.appcompat.widget.AppCompatButton
                     android:background="@drawable/bg_finish"
@@ -296,8 +327,7 @@
                     android:layout_width="@dimen/_70sdp"
                     android:layout_height="@dimen/_70sdp"
                     android:visibility="gone"
-                    android:layout_marginStart="8dp"
-                     />
+                    android:layout_marginStart="8dp" />
             </LinearLayout>
 
             <LinearLayout
@@ -305,6 +335,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
+
                 <LinearLayout
                     android:id="@+id/recentHeader"
                     android:layout_width="match_parent"
@@ -327,6 +358,7 @@
                         android:id="@+id/activityViewMore"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:visibility="gone"
                         android:fontFamily="@font/montserrat_regular"
                         android:text="@string/view_more"
                         android:textColor="@color/grey"
@@ -492,10 +524,10 @@
                     android:visibility="gone" />
             </LinearLayout>
 
-
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
+    <!-- Countdown Overlay -->
     <FrameLayout
         android:id="@+id/countdownOverlay"
         android:layout_width="0dp"

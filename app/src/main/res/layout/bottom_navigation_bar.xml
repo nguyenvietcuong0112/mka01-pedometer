@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="#E8F4FD"
+    android:background="#ECFAF4"
     android:orientation="horizontal"
     android:paddingTop="8dp"
     android:paddingBottom="8dp"
@@ -33,9 +33,10 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:text="Steps"
-            android:textSize="12sp"
+            android:gravity="center"
+            android:textSize="10sp"
             android:textColor="#5F7DED"
-            android:fontFamily="@font/montserrat_medium" />
+            android:fontFamily="@font/montserrat_bold" />
     </LinearLayout>
 
     <!-- Activity -->
@@ -63,9 +64,10 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:text="Activity"
-            android:textSize="12sp"
+            android:textSize="10sp"
+            android:gravity="center"
             android:textColor="#B0B0B0"
-            android:fontFamily="@font/montserrat_medium" />
+            android:fontFamily="@font/montserrat_bold" />
     </LinearLayout>
 
     <!-- Report -->
@@ -93,9 +95,10 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:text="Report"
-            android:textSize="12sp"
+            android:gravity="center"
+            android:textSize="10sp"
             android:textColor="#B0B0B0"
-            android:fontFamily="@font/montserrat_medium" />
+            android:fontFamily="@font/montserrat_bold" />
     </LinearLayout>
 
     <!-- Achievement -->
@@ -123,9 +126,13 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:text="Achievement"
-            android:textSize="12sp"
+            android:textSize="10sp"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:gravity="center"
             android:textColor="#B0B0B0"
-            android:fontFamily="@font/montserrat_medium" />
+            android:fontFamily="@font/montserrat_bold" />
     </LinearLayout>
 
     <!-- Settings -->
@@ -153,9 +160,10 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:text="Settings"
-            android:textSize="12sp"
+            android:gravity="center"
+            android:textSize="10sp"
             android:textColor="#B0B0B0"
-            android:fontFamily="@font/montserrat_medium" />
+            android:fontFamily="@font/montserrat_bold" />
     </LinearLayout>
 
 </LinearLayout>

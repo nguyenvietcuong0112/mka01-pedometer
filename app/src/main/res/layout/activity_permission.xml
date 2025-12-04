@@ -5,32 +5,26 @@
     android:layout_height="match_parent"
     android:background="@color/white">
 
-    <TextView
-        android:id="@+id/permissionTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/app_name"
-        android:textSize="22sp"
-        android:textColor="@color/black"
-        android:fontFamily="@font/montserrat_bold"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="72dp" />
+    <!-- Blue Header Bar -->
+    <LinearLayout
+        android:id="@+id/headerBar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_70sdp"
+        android:background="@drawable/bg_header_blue"
+        android:backgroundTint="@color/blue"
+        android:gravity="bottom"
+        android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/_15sdp"
+        android:paddingVertical="@dimen/_12sdp"
+        app:layout_constraintTop_toTopOf="parent">
 
-    <TextView
-        android:id="@+id/permissionDescription"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginStart="24dp"
-        android:layout_marginEnd="24dp"
-        android:textColor="@color/black"
-        android:textSize="14sp"
-        android:fontFamily="@font/montserrat_regular"
-        app:layout_constraintTop_toBottomOf="@id/permissionTitle"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/img_pedometer" />
+
+    </LinearLayout>
+
 
     <!-- Card: Activity recognition -->
     <LinearLayout
@@ -38,13 +32,12 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
-        android:layout_marginStart="24dp"
-        android:layout_marginEnd="24dp"
+        android:layout_marginHorizontal="@dimen/_10sdp"
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:background="@drawable/bg_card"
         android:padding="12dp"
-        app:layout_constraintTop_toBottomOf="@id/permissionDescription"
+        app:layout_constraintTop_toBottomOf="@+id/headerBar"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
@@ -74,7 +67,11 @@
         <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/switchActivity"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:thumb="@drawable/switch_thumb"
+            app:track="@drawable/switch_track"
+            app:switchMinWidth="48dp"
+            android:minHeight="24dp" />
     </LinearLayout>
 
     <!-- Card: Location -->
@@ -83,8 +80,8 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        android:layout_marginStart="24dp"
-        android:layout_marginEnd="24dp"
+        android:layout_marginHorizontal="@dimen/_10sdp"
+
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:background="@drawable/bg_card"
@@ -119,7 +116,11 @@
         <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/switchLocation"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:thumb="@drawable/switch_thumb"
+            app:track="@drawable/switch_track"
+            app:switchMinWidth="48dp"
+            android:minHeight="24dp" />
     </LinearLayout>
 
     <!-- Card: Notifications (Android 13+) -->
@@ -128,8 +129,8 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        android:layout_marginStart="24dp"
-        android:layout_marginEnd="24dp"
+        android:layout_marginHorizontal="@dimen/_10sdp"
+
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:background="@drawable/bg_card"
@@ -164,7 +165,11 @@
         <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/switchNotification"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:thumb="@drawable/switch_thumb"
+            app:track="@drawable/switch_track"
+            app:switchMinWidth="48dp"
+            android:minHeight="24dp" />
     </LinearLayout>
 
     <Button
@@ -185,5 +190,3 @@
         app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
-
-
