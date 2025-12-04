@@ -30,7 +30,6 @@ public class StepCounterService extends Service implements SensorEventListener {
     private static final String CHANNEL_ID = "step_counter_channel";
     private static final int NOTIFICATION_ID = 1001;
 
-    // per-step constants used when cộng thêm delta từ sensor
     private static final double KCAL_PER_STEP = 0.04;
     private static final double KM_PER_STEP = 0.0008;
 
@@ -39,9 +38,7 @@ public class StepCounterService extends Service implements SensorEventListener {
 
     private DatabaseHelper databaseHelper;
 
-    // cumulative steps from sensor
     private int totalSensorSteps = 0;
-    // baseline (sensor value) at start of today
     private int baselineToday = 0;
     private boolean baselineInitialized = false;
 
@@ -61,7 +58,6 @@ public class StepCounterService extends Service implements SensorEventListener {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        // If device does not support STEP_COUNTER, stop service
         if (stepCounterSensor == null || sensorManager == null) {
             stopSelf();
             return START_NOT_STICKY;
@@ -91,7 +87,6 @@ public class StepCounterService extends Service implements SensorEventListener {
 
         totalSensorSteps = (int) event.values[0];
 
-        // Initialize baseline for today if needed
         if (!baselineInitialized) {
             baselineToday = loadBaselineForToday();
             if (baselineToday == Integer.MIN_VALUE) {
@@ -103,31 +98,26 @@ public class StepCounterService extends Service implements SensorEventListener {
 
         int todaySteps = Math.max(0, totalSensorSteps - baselineToday);
 
-        // Lấy bước hiện đang lưu trong DB
         DatabaseHelper.StepData todayData = databaseHelper.getTodayStepData();
         int currentDbSteps = todayData.steps;
 
-        // Chỉ cộng thêm phần chênh lệch mới đo được từ sensor
         int extraSteps = Math.max(0, todaySteps - currentDbSteps);
         if (extraSteps > 0) {
             double extraCalories = extraSteps * KCAL_PER_STEP;
             double extraDistance = extraSteps * KM_PER_STEP;
-            long extraTime = estimateTimeMillis(extraSteps); // ước lượng thời gian đi thêm
+            long extraTime = estimateTimeMillis(extraSteps);
 
             databaseHelper.addToToday(extraSteps, extraCalories, extraDistance, extraTime);
         }
 
-        // Update foreground notification
         Notification notification = buildNotification(todaySteps);
         startForeground(NOTIFICATION_ID, notification);
     }
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
-        // no-op
     }
 
-    // ---------- Baseline helpers ----------
 
     private String getTodayKey() {
         return new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
@@ -146,11 +136,9 @@ public class StepCounterService extends Service implements SensorEventListener {
     }
 
     private long estimateTimeMillis(int steps) {
-        // Simple heuristic: ~120 steps / minute => 0.5s per step
         return steps * 500L;
     }
 
-    // ---------- Notification helpers ----------
 
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

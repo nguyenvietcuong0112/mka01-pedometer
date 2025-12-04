@@ -61,10 +61,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * ActivityFragment - sửa lỗi, hỗ trợ cả STEP_COUNTER & STEP_DETECTOR,
- * xử lý baseline đúng, và request ACTIVITY_RECOGNITION nếu cần.
- */
 public class ActivityFragment extends Fragment implements OnMapReadyCallback {
 
     public static ActivityFragment newInstance(boolean trackingMode) {
@@ -88,10 +84,9 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
     private static final double KCAL_PER_STEP = 0.04;
     private static final float FIXED_ZOOM_LEVEL = 17.5f;
 
-    // GPS Filter Constants
     private static final float MIN_ACCURACY_METERS = 25f;
     private static final float MIN_DISTANCE_METERS = 4f;
-    private static final float MAX_SPEED_KMH = 28f; // >28km/h → chắc chắn là xe
+    private static final float MAX_SPEED_KMH = 28f;
 
     private enum TrackingState {IDLE, COUNTDOWN, RUNNING, PAUSED}
     private TrackingState trackingState = TrackingState.IDLE;
@@ -105,7 +100,6 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
     private TextView emptyRecentText;
     private View recentHeader;
     private NestedScrollView scrollView;
-    // Views
     private MapView mapView;
     private GoogleMap googleMap;
     private Polyline routePolyline;
@@ -119,22 +113,19 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
 
     private ImageView pauseButton;
 
-    // Location
     private FusedLocationProviderClient fusedLocationClient;
     private LocationCallback locationCallback;
     private LocationRequest locationRequest;
     private Location lastValidLocation;
 
-    // Step Sensor
     private SensorManager sensorManager;
     private Sensor stepSensor;
-    private int stepsAtSessionStart = 0;           // baseline session
-    private int totalSensorSteps = 0;             // only meaningful for TYPE_STEP_COUNTER
-    private int detectorAccumulatedSteps = 0;     // accumulate for TYPE_STEP_DETECTOR while running
-    private boolean stepSensorIsCounter = false;  // true if TYPE_STEP_COUNTER, false if TYPE_STEP_DETECTOR
-    private boolean waitingForFirstCounterEvent = false; // used to set baseline if start before sensor event
+    private int stepsAtSessionStart = 0;
+    private int totalSensorSteps = 0;
+    private int detectorAccumulatedSteps = 0;
+    private boolean stepSensorIsCounter = false;
+    private boolean waitingForFirstCounterEvent = false;
 
-    // Tracking data
     private final List<LatLng> routePoints = new ArrayList<>();
     private double distanceMeters = 0d;
     private long sessionStartMillis = 0L;
@@ -143,11 +134,9 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
 
     private final Handler timerHandler = new Handler(Looper.getMainLooper());
 
-    // Permissions
     private ActivityResultLauncher<String[]> locationPermissionLauncher;
     private ActivityResultLauncher<String> activityRecognitionLauncher;
 
-    // Database
     private DatabaseHelper databaseHelper;
 
     private final Runnable timerRunnable = new Runnable() {
@@ -165,25 +154,18 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
         public void onSensorChanged(SensorEvent event) {
 
             if (event.sensor.getType() == Sensor.TYPE_STEP_COUNTER) {
-                // TYPE_STEP_COUNTER: event.values[0] = cumulative steps since last boot (float)
                 totalSensorSteps = (int) event.values[0];
 
-                // If we are waiting to set baseline (because startSession ran before first sensor event),
-                // initialize stepsAtSessionStart now.
                 if (waitingForFirstCounterEvent && trackingState == TrackingState.RUNNING) {
                     stepsAtSessionStart = totalSensorSteps;
                     waitingForFirstCounterEvent = false;
                 }
 
-                // Update UI only if running (or you can show total ever)
                 if (trackingState == TrackingState.RUNNING) {
                     updateStats();
                 }
             } else if (event.sensor.getType() == Sensor.TYPE_STEP_DETECTOR) {
-                // TYPE_STEP_DETECTOR: each event is one step (value = 1.0)
-                // Note: when using STEP_DETECTOR we must count steps ourselves only while RUNNING
                 if (trackingState == TrackingState.RUNNING) {
-                    // Some devices may deliver multiple events per onSensorChanged call; loop through values
                     for (int i = 0; i < event.values.length; i++) {
                         if (event.values[i] == 1.0f) {
                             detectorAccumulatedSteps++;
@@ -196,7 +178,6 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
 
         @Override
         public void onAccuracyChanged(Sensor sensor, int accuracy) {
-            // Optional: handle accuracy changes
         }
     };
 
@@ -211,7 +192,6 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
             isTrackingMode = args.getBoolean(ARG_TRACKING_MODE, false);
         }
 
-        // Khởi tạo ActivityResultLauncher trong onCreate
         locationPermissionLauncher = registerForActivityResult(
                 new ActivityResultContracts.RequestMultiplePermissions(),
                 result -> {
@@ -222,7 +202,6 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
                             || (coarseLocationGranted != null && coarseLocationGranted)) {
                         enableMyLocationLayer();
 
-                        // Di chuyển tới vị trí hiện tại sau khi có quyền
                         if (googleMap != null) {
                             moveToCurrentLocation();
                         }
@@ -233,7 +212,7 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
                     } else {
                         if (isAdded()) {
                             Toast.makeText(requireContext(),
-                                    "Cần cấp quyền vị trí để theo dõi đường chạy!",
+                                    "Location permission required to track the run!",
                                     Toast.LENGTH_LONG).show();
                             if (trackingState == TrackingState.RUNNING) {
                                 pauseSession();
@@ -243,14 +222,12 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
                 }
         );
 
-        // Activity recognition (step sensors may require ACTIVITY_RECOGNITION runtime permission on newer Android)
         activityRecognitionLauncher = registerForActivityResult(
                 new ActivityResultContracts.RequestPermission(),
                 granted -> {
                     if (!granted) {
-                        // nếu user từ chối, cảnh báo nhưng vẫn cho phép fallback accelerometer nếu bạn implement
                         Toast.makeText(requireContext(),
-                                "Quyền Activity recognition bị từ chối — đếm bước có thể bị giới hạn.",
+                                "Activity recognition permission denied — step counting may be limited.",
                                 Toast.LENGTH_LONG).show();
                     }
                 }
@@ -268,7 +245,7 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
         initMap(savedInstanceState);
         updateRecentCard();
         updateButtonState();
-        updateStats(); // Cập nhật stats ban đầu
+        updateStats();
         return view;
     }
 
@@ -304,32 +281,27 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
 
 
     private void showTrackingMode() {
-        // Chỉ ẩn header và recent card
         headerBar.setVisibility(View.GONE);
         recentHeader.setVisibility(View.GONE);
         recentCard.setVisibility(View.GONE);
         emptyRecentText.setVisibility(View.GONE);
 
-        // KHÔNG ẨN scrollView - chỉ disable scroll
         scrollView.setNestedScrollingEnabled(false);
 
-        // Tăng chiều cao map nhưng KHÔNG MATCH_PARENT
         ViewGroup.LayoutParams params = mapView.getLayoutParams();
-        params.height = (int) (450 * getResources().getDisplayMetrics().density); // ~450dp thay vì MATCH_PARENT
+        params.height = (int) (450 * getResources().getDisplayMetrics().density);
         mapView.setLayoutParams(params);
     }
 
     private void showNormalMode() {
-        // Trở lại giao diện bình thường khi dừng
         headerBar.setVisibility(View.VISIBLE);
         recentHeader.setVisibility(View.VISIBLE);
         recentCard.setVisibility(View.VISIBLE);
         emptyRecentText.setVisibility(recentCard.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
         scrollView.setNestedScrollingEnabled(true);
 
-        // Trả lại chiều cao map ban đầu
         ViewGroup.LayoutParams params = mapView.getLayoutParams();
-        params.height = (int) (260 * getResources().getDisplayMetrics().density); // 260dp
+        params.height = (int) (260 * getResources().getDisplayMetrics().density);
         mapView.setLayoutParams(params);
 
         updateRecentCard();
@@ -390,21 +362,18 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
     private void setupStepSensor() {
         sensorManager = (SensorManager) requireContext().getSystemService(Context.SENSOR_SERVICE);
         if (sensorManager != null) {
-            // Prefer TYPE_STEP_COUNTER (low power, cumulative)
             Sensor counter = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
             if (counter != null) {
                 stepSensor = counter;
                 stepSensorIsCounter = true;
             } else {
-                // fallback to STEP_DETECTOR (event per step)
                 Sensor detector = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
                 if (detector != null) {
                     stepSensor = detector;
                     stepSensorIsCounter = false;
                 } else {
-                    // Optionally, one could fallback to accelerometer-based algorithm here
                     Toast.makeText(requireContext(),
-                            "Thiết bị không hỗ trợ đếm bước tự động (STEP_COUNTER/STEP_DETECTOR).",
+                            "The device does not support automatic step counting (STEP_COUNTER/STEP_DETECTOR).",
                             Toast.LENGTH_LONG).show();
                     stepSensor = null;
                 }
@@ -413,13 +382,12 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
     }
 
     private void startSession() {
-        // Kiểm tra quyền trước
         if (!hasLocationPermission()) {
             requestLocationPermission();
             return;
         }
         if (stepSensor == null) {
-            Toast.makeText(requireContext(), "Thiết bị không hỗ trợ đếm bước", Toast.LENGTH_LONG).show();
+            Toast.makeText(requireContext(), "The device does not support step counting.", Toast.LENGTH_LONG).show();
             return;
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -430,13 +398,12 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
             }
         }
 
-        // BẮT ĐẦU COUNTDOWN 3 → 2 → 1 → GO!
         trackingState = TrackingState.COUNTDOWN;
         updateButtonState();
         countdownOverlay.setVisibility(View.VISIBLE);
 
         final String[] texts = {"3", "2", "1", "GO!"};
-        final int[] count = {0};  // <-- đã khởi tạo đúng
+        final int[] count = {0};
 
         Handler handler = new Handler(Looper.getMainLooper());
         Runnable runnable = new Runnable() {
@@ -445,7 +412,6 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
                 if (count[0] < texts.length) {
                     countdownText.setText(texts[count[0]]);
 
-                    // Hiệu ứng phóng to → thu nhỏ đẹp mắt
                     countdownText.setScaleX(0.5f);
                     countdownText.setScaleY(0.5f);
                     countdownText.setAlpha(0f);
@@ -462,12 +428,12 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
                                         .start();
 
                                 count[0]++;
-                                handler.postDelayed(this, 1000); // <-- đúng cú pháp
+                                handler.postDelayed(this, 1000);
                             })
                             .start();
                 } else {
                     countdownOverlay.setVisibility(View.GONE);
-                    startSessionReal(); // Bắt đầu thật sự
+                    startSessionReal();
                 }
             }
         };
@@ -475,7 +441,6 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
         handler.post(runnable);
     }
 
-    // Hàm bắt đầu thật sự sau countdown (đừng quên thêm hàm này nữa nhé!)
     private void startSessionReal() {
         resetSession();
 
@@ -499,11 +464,10 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
         timerHandler.post(timerRunnable);
         updateButtonState();
         updateStats();
-        showTrackingMode(); // Thêm dòng này
-        Toast.makeText(requireContext(), "Chạy thôi nào!", Toast.LENGTH_SHORT).show();
+        showTrackingMode();
+        Toast.makeText(requireContext(), "Let's run!", Toast.LENGTH_SHORT).show();
     }
 
-    // Hàm mới: bắt đầu thật sự sau khi countdown
 
 
     private void pauseSession() {
@@ -512,7 +476,6 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
         }
         trackingState = TrackingState.PAUSED;
 
-        // Khi pause, ta có thể un-register listener để tiết kiệm pin (vì session tạm dừng)
         if (sensorManager != null) {
             sensorManager.unregisterListener(stepSensorListener);
         }
@@ -522,7 +485,7 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
         updateButtonState();
         updateStats();
 
-        Toast.makeText(requireContext(), "Đã tạm dừng", Toast.LENGTH_SHORT).show();
+        Toast.makeText(requireContext(), "Paused", Toast.LENGTH_SHORT).show();
     }
 
     private void resumeSession() {
@@ -534,31 +497,22 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
 
         if (stepSensor == null) {
             Toast.makeText(requireContext(),
-                    "Không thể tiếp tục: Thiết bị không hỗ trợ đếm bước",
+                    "Unable to continue: Device does not support step counting",
                     Toast.LENGTH_LONG).show();
             return;
         }
 
         trackingState = TrackingState.RUNNING;
         sessionStartMillis = System.currentTimeMillis();
-        showTrackingMode(); // Thêm dòng này
-        // Nếu TYPE_STEP_COUNTER: baseline (stepsAtSessionStart) phải được set dựa trên hiện tại
-        // để tránh nhảy số khi resume. Cách đơn giản: set stepsAtSessionStart = current cumulative - alreadyCountedThisSession
+        showTrackingMode();
         if (stepSensorIsCounter) {
-            // if totalSensorSteps is available, adjust baseline so that getCurrentSteps() continues from previous value
             if (totalSensorSteps > 0) {
-                // currentStepsAlready = previousSavedStepsFromThisSession = what getCurrentSteps() returned before pause
-                // We already preserved stepsAtSessionStart at session start, and detectorAccumulatedSteps for detector.
-                // To avoid jumps, we don't change stepsAtSessionStart here.
             } else {
-                // If we still haven't received any counter event, mark waiting to set baseline when event arrives
                 waitingForFirstCounterEvent = true;
             }
         } else {
-            // TYPE_STEP_DETECTOR: nothing special; detectorAccumulatedSteps retains previous count
         }
 
-        // register sensor listener again
         if (sensorManager != null && stepSensor != null) {
             sensorManager.registerListener(stepSensorListener, stepSensor, SensorManager.SENSOR_DELAY_UI);
         }
@@ -567,17 +521,16 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
         timerHandler.post(timerRunnable);
         updateButtonState();
 
-        Toast.makeText(requireContext(), "Đã tiếp tục", Toast.LENGTH_SHORT).show();
+        Toast.makeText(requireContext(), "Continued", Toast.LENGTH_SHORT).show();
     }
 
     private void finishSession() {
         if (trackingState == TrackingState.RUNNING) {
             accumulatedTimeMillis += System.currentTimeMillis() - sessionStartMillis;
         }
-        showNormalMode(); // Thêm dòng này
+        showNormalMode();
         trackingState = TrackingState.IDLE;
 
-        // Unregister sensor to save resources
         if (sensorManager != null) {
             sensorManager.unregisterListener(stepSensorListener);
         }
@@ -585,21 +538,19 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
         stopLocationUpdates();
         timerHandler.removeCallbacks(timerRunnable);
 
-        // Lưu session nếu đủ điều kiện
-        if (distanceMeters >= 50 && getCurrentDuration() >= 30000) {
+        if (distanceMeters >= 10 && getCurrentDuration() >= 10000) {
             saveRecentSession();
             updateRecentCard();
             syncSessionToDailySteps();
             Toast.makeText(requireContext(),
-                    "Đã lưu hoạt động: " + formatDistance(distanceMeters),
+                    "Saved activity: " + formatDistance(distanceMeters),
                     Toast.LENGTH_LONG).show();
         } else {
             Toast.makeText(requireContext(),
-                    "Hoạt động quá ngắn, không được lưu",
+                    "Activity too short, not saved",
                     Toast.LENGTH_SHORT).show();
         }
 
-        // reset session state but keep last saved recent session visible
         resetSession();
         updateButtonState();
         updateStats();
@@ -609,10 +560,7 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
         }
     }
 
-    /**
-     * Đồng bộ session hiện tại vào bảng steps (DatabaseHelper) để dữ liệu
-     * ở màn Home / Report / Achievement luôn khớp với Activity.
-     */
+
     private void syncSessionToDailySteps() {
         if (!isAdded() || databaseHelper == null) return;
 
@@ -620,9 +568,8 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
         if (steps <= 0) return;
 
         double calories = steps * KCAL_PER_STEP;
-        // distanceMeters đang là mét, convert sang km để khớp cách lưu hiện tại (HomeFragment dùng km)
         double distanceKm = distanceMeters / 1000d;
-        long timeMillis = getCurrentDuration(); // HomeFragment cũng đang lưu time ở đơn vị millis
+        long timeMillis = getCurrentDuration();
 
         databaseHelper.addToToday(steps, calories, distanceKm, timeMillis);
     }
@@ -648,28 +595,20 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
             startMarker = null;
         }
 
-        // --- CRITICAL FIX for step counters ---
-        // Với TYPE_STEP_COUNTER: đặt baseline = totalSensorSteps để UI hiển thị 0 ngay sau finish/reset.
-        // Với TYPE_STEP_DETECTOR: giữ detectorAccumulatedSteps = 0.
         if (stepSensorIsCounter) {
-            // Nếu chúng ta đã có giá trị cumulative từ sensor, dùng nó làm baseline.
-            // Nếu chưa có (totalSensorSteps == 0), chờ event đầu tiên khi start session.
             if (totalSensorSteps > 0) {
                 stepsAtSessionStart = totalSensorSteps;
                 waitingForFirstCounterEvent = false;
             } else {
-                // chưa có event nào tới, giữ behavior: khi start sẽ set baseline khi event đầu tiên tới
                 stepsAtSessionStart = 0;
                 waitingForFirstCounterEvent = true;
             }
         } else {
-            // STEP_DETECTOR: clear bộ đếm session-local
             detectorAccumulatedSteps = 0;
             stepsAtSessionStart = 0;
             waitingForFirstCounterEvent = false;
         }
 
-        // Reset UI
         updateStats();
     }
 
@@ -686,7 +625,7 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
             } catch (SecurityException e) {
                 e.printStackTrace();
                 Toast.makeText(requireContext(),
-                        "Lỗi quyền truy cập vị trí",
+                        "Location access error",
                         Toast.LENGTH_SHORT).show();
             }
         }
@@ -703,7 +642,6 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
     private void handleLocationUpdate(@NonNull Location location) {
         if (trackingState != TrackingState.RUNNING) return;
 
-        // 1. Lọc độ chính xác
         if (!location.hasAccuracy() || location.getAccuracy() > MIN_ACCURACY_METERS) return;
 
         LatLng newPoint = new LatLng(location.getLatitude(), location.getLongitude());
@@ -711,17 +649,15 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
         if (lastValidLocation != null) {
             float distance = location.distanceTo(lastValidLocation);
 
-            // 2. Lọc jitter nhỏ
             if (distance < MIN_DISTANCE_METERS) {
                 updateLiveMarker(newPoint);
                 return;
             }
 
-            // 3. Lọc tốc độ bất thường
             long timeDiff = location.getTime() - lastValidLocation.getTime();
             if (timeDiff > 0) {
                 float speedKmh = (distance / timeDiff) * 3.6f;
-                if (speedKmh > MAX_SPEED_KMH) return; // Đi xe
+                if (speedKmh > MAX_SPEED_KMH) return;
             }
 
             distanceMeters += distance;
@@ -799,16 +735,11 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
         distanceText.setText(formatDistance(distanceMeters));
     }
 
-    /**
-     * Trả về số bước hiện tại của session.
-     * - Nếu dùng STEP_COUNTER: totalSensorSteps - stepsAtSessionStart
-     * - Nếu dùng STEP_DETECTOR: detectorAccumulatedSteps
-     */
+
     private int getCurrentSteps() {
         if (stepSensor == null) return 0;
 
         if (stepSensorIsCounter) {
-            // Nếu đang chờ event đầu tiên (waitingForFirstCounterEvent) — chưa có baseline -> 0
             if (waitingForFirstCounterEvent) return 0;
             int result = Math.max(0, totalSensorSteps - stepsAtSessionStart);
             return result;
@@ -924,12 +855,11 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
         if (hasLocationPermission()) {
             try {
                 googleMap.setMyLocationEnabled(true);
-                googleMap.getUiSettings().setMyLocationButtonEnabled(true); // Cho phép nút my location
+                googleMap.getUiSettings().setMyLocationButtonEnabled(true);
             } catch (SecurityException e) {
                 e.printStackTrace();
             }
         } else {
-            // Tự động request permission khi mở fragment nếu chưa có
             requestLocationPermission();
         }
     }
@@ -942,7 +872,6 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
         googleMap.getUiSettings().setMapToolbarEnabled(false);
         enableMyLocationLayer();
 
-        // Thêm padding nếu cần
         googleMap.setPadding(0, 0, 0, 200);
 
         moveToCurrentLocation();
@@ -980,7 +909,6 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
                         }
                     })
                     .addOnFailureListener(e -> {
-                        // Có thể log lỗi hoặc show message nhẹ
                         Log.e("ActivityFragment", "Failed to get current location", e);
                     });
         } catch (SecurityException e) {
@@ -990,13 +918,10 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
 
     private void initLocationOnStart() {
         if (hasLocationPermission() && googleMap != null) {
-            // Đã có permission và map ready
             moveToCurrentLocation();
         } else if (!hasLocationPermission() && googleMap != null) {
-            // Chưa có permission, request và sẽ move sau khi có permission
             requestLocationPermission();
         }
-        // Trường hợp map chưa ready sẽ xử lý trong onMapReady
     }
 
     @Override
@@ -1006,12 +931,10 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
             mapView.onResume();
         }
 
-        // Cập nhật vị trí hiện tại khi quay lại fragment
         if (googleMap != null && hasLocationPermission()) {
             moveToCurrentLocation();
         }
 
-        // Nếu đang RUNNING, cần đảm bảo listener được đăng ký
         if (sensorManager != null && stepSensor != null && trackingState == TrackingState.RUNNING) {
             sensorManager.registerListener(stepSensorListener, stepSensor, SensorManager.SENSOR_DELAY_UI);
         }
@@ -1027,15 +950,6 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
         if (mapView != null) {
             mapView.onPause();
         }
-//        // Nếu fragment ra sau khi app visible, chúng ta có thể unregister để tiết kiệm pin.
-//        if (sensorManager != null) {
-//            sensorManager.unregisterListener(stepSensorListener);
-//        }
-//        if (trackingState == TrackingState.RUNNING) {
-//            // giữ state RUNNING nhưng tạm dừng cập nhật (tuỳ UX bạn có muốn auto-pause)
-//            // code gốc của bạn auto-pause khi thoát màn hình — mình giữ hành vi này:
-//            pauseSession(); // tự động pause khi thoát màn hình
-//        }
     }
 
     @Override

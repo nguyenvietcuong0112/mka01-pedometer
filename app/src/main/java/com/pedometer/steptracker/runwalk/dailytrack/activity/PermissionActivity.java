@@ -77,13 +77,12 @@ public class PermissionActivity extends AppCompatActivity {
             return;
         }
 
-        TextView description = findViewById(R.id.permissionDescription);
+
         btnGrant = findViewById(R.id.btnGrantPermission);
         switchActivity = findViewById(R.id.switchActivity);
         switchLocation = findViewById(R.id.switchLocation);
         switchNotification = findViewById(R.id.switchNotification);
 
-        description.setText(getString(R.string.permission_description));
 
         switchActivity.setOnClickListener(v -> requestActivityPermission());
         switchLocation.setOnClickListener(v -> requestLocationPermissions());

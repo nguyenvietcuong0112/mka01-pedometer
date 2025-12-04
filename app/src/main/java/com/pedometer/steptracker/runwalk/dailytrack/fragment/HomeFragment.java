@@ -1,6 +1,7 @@
 package com.pedometer.steptracker.runwalk.dailytrack.fragment;
 
 import android.Manifest;
+import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -47,6 +48,8 @@ import com.pedometer.steptracker.runwalk.dailytrack.activity.MainActivity;
 import com.pedometer.steptracker.runwalk.dailytrack.activity.StepGoalActivity;
 import com.pedometer.steptracker.runwalk.dailytrack.activity.WeightActivity;
 import com.pedometer.steptracker.runwalk.dailytrack.model.DatabaseHelper;
+import com.pedometer.steptracker.runwalk.dailytrack.model.WeightHistoryHelper;
+import com.pedometer.steptracker.runwalk.dailytrack.utils.ArcProgressView;
 import com.pedometer.steptracker.runwalk.dailytrack.utils.CustomBottomSheetDialogExitFragment;
 import com.pedometer.steptracker.runwalk.dailytrack.utils.ProfileDataManager;
 import com.pedometer.steptracker.runwalk.dailytrack.utils.SharePreferenceUtils;
@@ -55,10 +58,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
-/**
- * HomeFragment - updated: prefer TYPE_STEP_COUNTER, fallback accelerometer,
- * baseline stored per-day to avoid jumps, reset at finish.
- */
 public class HomeFragment extends Fragment {
 
     private static final int PERMISSION_REQUEST_ACTIVITY_RECOGNITION = 45;
@@ -69,6 +68,9 @@ public class HomeFragment extends Fragment {
     private static final int STEP_DELAY_MS = 250;
     private static final int PEAK_COUNT = 4;
     private static final float DIRECTION_THRESHOLD = 1.0f;
+
+    private ArcProgressView arcView;
+    private FrameLayout badgeStar;
 
     private Handler handler = new Handler(Looper.getMainLooper());
     private boolean isFirstLoad = true;
@@ -81,7 +83,6 @@ public class HomeFragment extends Fragment {
         }
     };
 
-    // UI
     private TextView stepCountText, targetText, remainingText;
     private TextView kcalText, timeText, distanceText;
     private TextView goalStepsText;
@@ -94,13 +95,12 @@ public class HomeFragment extends Fragment {
     private boolean isTracking = false;
     private SensorManager sensorManager;
     private Sensor accelerometer;
-    private Sensor stepCounterSensor; // TYPE_STEP_COUNTER or STEP_DETECTOR
-    private boolean stepSensorIsCounter = false; // true: TYPE_STEP_COUNTER
-    private boolean stepSensorIsDetector = false; // true: TYPE_STEP_DETECTOR
+    private Sensor stepCounterSensor;
+    private boolean stepSensorIsCounter = false;
+    private boolean stepSensorIsDetector = false;
 
-    // Step bookkeeping
-    private int stepCount = 0; // value shown on UI (today/session)
-    private int detectorAccumulatedSteps = 0; // for STEP_DETECTOR/accelerometer fallback
+    private int stepCount = 0;
+    private int detectorAccumulatedSteps = 0;
     private int stepGoal;
     private long startTime;
     private long elapsedTime = 0;
@@ -125,13 +125,12 @@ public class HomeFragment extends Fragment {
     private SharePreferenceUtils sharePreferenceUtils;
     private View rootView;
 
-    // Step counter cumulative handling
-    private int totalSensorSteps = 0; // cumulative from sensor event (TYPE_STEP_COUNTER)
-    private int stepsBaselineForToday = 0; // baseline cumulative value when the day/session started
+    private int totalSensorSteps = 0;
+    private int stepsBaselineForToday = 0;
     private boolean waitingForFirstCounterEvent = false;
 
-    private static final String PREFS_BASELINE = "pedometer_baselines"; // store baseline per date
-    private static final String PREFS_TODAY_DATA = "pedometer_today_data"; // optional local storage
+    private static final String PREFS_BASELINE = "pedometer_baselines";
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -147,9 +146,9 @@ public class HomeFragment extends Fragment {
         sharePreferenceUtils.incrementCounter();
 
         initializeViews();
-        setupSensor(); // detect available sensors
+        setupSensor();
         setupClickListeners();
-        loadTodayData(); // load DB saved or baseline-based steps
+        loadTodayData();
         setupTimeUpdater();
         checkAndRequestPermissions();
 
@@ -194,6 +193,14 @@ public class HomeFragment extends Fragment {
         tvWeightGoal = rootView.findViewById(R.id.tvWeightGoal);
         weightSection = rootView.findViewById(R.id.weightSection);
 
+        arcView = rootView.findViewById(R.id.arcView);
+        arcView.setSidePaddingDp(50f);
+
+        badgeStar = rootView.findViewById(R.id.badgeStar);
+
+        if (arcView != null && badgeStar != null) {
+            arcView.setBadgeView(badgeStar);
+        }
 
         startStopButtonCircle = rootView.findViewById(R.id.startStopButton);
         editGoalButton = rootView.findViewById(R.id.editGoalButton);
@@ -211,32 +218,76 @@ public class HomeFragment extends Fragment {
     }
 
     private void setupWeightSection() {
-        float weight = ProfileDataManager.getWeight(requireContext());
-        float weightGoal = ProfileDataManager.getWeightGoal(requireContext());
-
-        if (tvCurrentWeight != null) {
-            if (weight > 0) {
-                tvCurrentWeight.setText(String.format(Locale.getDefault(), "%.1f", weight));
-            } else {
-                tvCurrentWeight.setText("0.0");
-            }
-        }
-
-        if (tvWeightGoal != null) {
-            if (weightGoal > 0) {
-                tvWeightGoal.setText(String.format(Locale.getDefault(), "Goal: %.1fkg", weightGoal));
-            } else {
-                tvWeightGoal.setText("Goal: 0.0kg");
-            }
-        }
-
         if (weightSection != null) {
             weightSection.setOnClickListener(v -> {
                 Intent intent = new Intent(requireContext(), WeightActivity.class);
                 startActivity(intent);
             });
         }
+        float prevCurrent = 0f;
+        if (arcView != null) {
+            try {
+                prevCurrent = arcView.getCurrentWeight();
+            } catch (Exception ignored) {
+                prevCurrent = 0f;
+            }
+        } else {
+            try {
+                prevCurrent = Float.parseFloat(tvCurrentWeight.getText().toString());
+            } catch (Exception ignored) {
+                prevCurrent = 0f;
+            }
+        }
+
+        float weight = ProfileDataManager.getWeight(requireContext());
+        float weightGoal = ProfileDataManager.getWeightGoal(requireContext());
+
+
+        if (weightGoal <= 0f) {
+            if (weight > 0f) {
+                weightGoal = weight;
+            } else {
+                weightGoal = 100f;
+            }
+        }
+
+        tvWeightGoal.setText(String.format(Locale.getDefault(), "%.1fkg", weightGoal));
+
+
+        if (Float.isNaN(weight)) weight = 0f;
+        if (Float.isNaN(weightGoal) || weightGoal <= 0f) weightGoal = 100f;
+
+        if (arcView != null) {
+            arcView.setGoalWeight(weightGoal);
+
+            prevCurrent = Math.max(0f, prevCurrent);
+            weight = Math.max(0f, weight);
+
+            boolean hasPrev = prevCurrent > 0f && prevCurrent != weight;
+
+            if (!hasPrev) {
+                arcView.setCurrentWeight(weight);
+                tvCurrentWeight.setText(String.format(Locale.getDefault(), "%.1f", weight));
+            } else {
+                arcView.animateCurrentWeight(prevCurrent, weight, 700);
+                animateCurrentWeightText(prevCurrent, weight, 700);
+            }
+        } else {
+            tvCurrentWeight.setText(String.format(Locale.getDefault(), "%.1f", weight));
+        }
+
     }
+
+    private void animateCurrentWeightText(float from, float to, long duration) {
+        ValueAnimator numberAnim = ValueAnimator.ofFloat(from, to);
+        numberAnim.setDuration(duration);
+        numberAnim.addUpdateListener(anim -> {
+            float v = (float) anim.getAnimatedValue();
+            tvCurrentWeight.setText(String.format(Locale.getDefault(), "%.1f", v));
+        });
+        numberAnim.start();
+    }
+
 
     private void loadNativeBanner() {
         Admob.getInstance().loadNativeAd(requireContext(), getString(R.string.native_banner_home), new NativeCallback() {
@@ -386,10 +437,7 @@ public class HomeFragment extends Fragment {
         hoursTextView.setText(formatMillisToHMS(totalTime));
     }
 
-    /**
-     * totalMillis: thời gian lưu trong DB đang là milli‑seconds,
-     * cần đổi sang giây trước khi format HH:mm:ss.
-     */
+
     private String formatMillisToHMS(long totalMillis) {
         long totalSeconds = totalMillis / 1000;
         long hours = totalSeconds / 3600;
@@ -398,9 +446,7 @@ public class HomeFragment extends Fragment {
         return String.format(Locale.getDefault(), "%02d:%02d:%02d", hours, minutes, seconds);
     }
 
-    /**
-     * Detect available sensors. Prefer TYPE_STEP_COUNTER. If not available, fallback to accelerometer.
-     */
+
     private void setupSensor() {
         sensorManager = (SensorManager) requireContext().getSystemService(Context.SENSOR_SERVICE);
         if (sensorManager == null) {
@@ -408,18 +454,15 @@ public class HomeFragment extends Fragment {
             return;
         }
 
-        // Try STEP_COUNTER first
         Sensor counter = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
         if (counter != null) {
             stepCounterSensor = counter;
             stepSensorIsCounter = true;
             stepSensorIsDetector = false;
-            // We will register listener only when tracking, or when we need live updates
             Log.d("HomeFragment", "Using TYPE_STEP_COUNTER");
             return;
         }
 
-        // Try STEP_DETECTOR
         Sensor detector = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
         if (detector != null) {
             stepCounterSensor = detector;
@@ -429,7 +472,6 @@ public class HomeFragment extends Fragment {
             return;
         }
 
-        // Fallback: accelerometer algorithm
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         if (accelerometer == null) {
             showSensorNotAvailableDialog();
@@ -439,22 +481,20 @@ public class HomeFragment extends Fragment {
     }
 
     private void setupClickListeners() {
-        // Circular play/pause button
         if (startStopButtonCircle != null) {
             startStopButtonCircle.setOnClickListener(v -> {
                 isTracking = !isTracking;
                 if (isTracking) {
                     startStepTracking();
                     startStopButtonCircle.setImageResource(R.drawable.ic_pause);
-                    startStopButtonCircle.setColorFilter(null); // Clear tint for pause icon (it has built-in color)
+                    startStopButtonCircle.setColorFilter(null);
                 } else {
                     stopStepTracking();
                     startStopButtonCircle.setImageResource(R.drawable.ic_play);
-                    startStopButtonCircle.setColorFilter(new PorterDuffColorFilter(0xFF5F7DED, PorterDuff.Mode.SRC_IN)); // Set blue tint for play icon
+                    startStopButtonCircle.setColorFilter(new PorterDuffColorFilter(0xFF5F7DED, PorterDuff.Mode.SRC_IN));
                 }
             });
         }
-
 
 
         settingDailyStep.setOnClickListener(v -> {
@@ -462,7 +502,6 @@ public class HomeFragment extends Fragment {
             startActivity(intent);
         });
 
-        // Edit goal button (circular button at bottom of circle)
         if (editGoalButton != null) {
             editGoalButton.setOnClickListener(v -> {
                 Intent intent = new Intent(requireContext(), StepGoalActivity.class);
@@ -470,7 +509,6 @@ public class HomeFragment extends Fragment {
             });
         }
 
-        // View Report button
         if (viewReportButton != null) {
             viewReportButton.setOnClickListener(v -> {
                 if (requireActivity() instanceof MainActivity) {
@@ -499,14 +537,8 @@ public class HomeFragment extends Fragment {
         };
     }
 
-    /**
-     * Start tracking:
-     * - If STEP_COUNTER available: register for it and ensure today's baseline is loaded.
-     * - Else if STEP_DETECTOR: register for detector and zero detectorAccumulatedSteps if starting new day.
-     * - Else accelerometer: register accelerometer listener.
-     */
+
     private void startStepTracking() {
-        // ensure baseline for today (if using step counter)
         ensureBaselineForToday();
 
         startTime = System.currentTimeMillis() - elapsedTime;
@@ -525,45 +557,31 @@ public class HomeFragment extends Fragment {
         handler.post(timeUpdater);
     }
 
-    /**
-     * Stop tracking:
-     * - Unregister listener.
-     * - Save current data (DB).
-     * - For STEP_COUNTER: keep baseline as-is (or update baseline on reset/finish if you want show zero immediately).
-     */
+
     private void stopStepTracking() {
         if (sensorManager != null) {
             sensorManager.unregisterListener(stepListener);
         }
         handler.removeCallbacks(timeUpdater);
 
-        // Save today's data to DB
         saveCurrentData();
     }
 
-    /**
-     * SensorEventListener that handles TYPE_STEP_COUNTER, TYPE_STEP_DETECTOR, and ACCELEROMETER fallback.
-     */
     private final SensorEventListener stepListener = new SensorEventListener() {
         @Override
         public void onSensorChanged(SensorEvent event) {
             if (event.sensor.getType() == Sensor.TYPE_STEP_COUNTER) {
-                // cumulative steps since boot
                 totalSensorSteps = (int) event.values[0];
 
-                // If we are waiting to set baseline for today, set it now (only if baseline not set)
                 if (waitingForFirstCounterEvent) {
                     stepsBaselineForToday = totalSensorSteps;
                     saveBaselineForToday(stepsBaselineForToday);
                     waitingForFirstCounterEvent = false;
                 }
 
-                // compute visible stepCount = totalSensorSteps - baselineForToday
                 stepCount = Math.max(0, totalSensorSteps - getBaselineForToday());
-                // update elapsedTime kept as before
                 updateUI();
             } else if (event.sensor.getType() == Sensor.TYPE_STEP_DETECTOR) {
-                // each event.values[i] == 1.0f means a step
                 for (float v : event.values) {
                     if (v == 1.0f) {
                         detectorAccumulatedSteps++;
@@ -572,18 +590,16 @@ public class HomeFragment extends Fragment {
                 stepCount = detectorAccumulatedSteps;
                 updateUI();
             } else if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-                detectStep(event); // your existing accelerometer detection logic updates stepCount and UI
+                detectStep(event);
             }
         }
 
         @Override
-        public void onAccuracyChanged(Sensor sensor, int accuracy) {}
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+        }
     };
 
-    /**
-     * Accelerometer-based detection (your existing implementation) — updates detectorAccumulatedSteps and stepCount.
-     * We preserve your verticalRatio check + peak detection.
-     */
+
     private void detectStep(SensorEvent event) {
         final float alpha = 0.8f;
 
@@ -613,7 +629,6 @@ public class HomeFragment extends Fragment {
             if (verticalRatio > DIRECTION_THRESHOLD) {
                 detectorAccumulatedSteps++;
                 lastStepTime = currentTime;
-                // stepCount mirrors detectorAccumulatedSteps for accelerometer fallback
                 stepCount = detectorAccumulatedSteps;
                 updateUI();
             }
@@ -621,11 +636,9 @@ public class HomeFragment extends Fragment {
     }
 
     private boolean isStepPattern() {
-        // ensure we have filled the window
         float sum = 0;
         int count = 0;
         for (float v : lastValues) {
-            // some positions might be zero if not filled; count non-zero
             if (v != 0f) {
                 sum += v;
                 count++;
@@ -655,7 +668,7 @@ public class HomeFragment extends Fragment {
                 progressBar.setProgress(Math.min(stepCount, stepGoal));
 
                 updateTargetText();
-                
+
                 int remainingSteps = Math.max(0, stepGoal - stepCount);
                 if (remainingText != null) {
                     remainingText.setText(getString(R.string.remaining_steps_format, remainingSteps));
@@ -692,54 +705,37 @@ public class HomeFragment extends Fragment {
                 (elapsedTime / 1000) % 60));
     }
 
-    /**
-     * Load today's data:
-     * - If using STEP_COUNTER: load baseline for today and compute stepCount = totalSensorSteps - baseline.
-     * - Else (accelerometer / detector): read DB saved value for today (your existing DB helper).
-     */
+
     private void loadTodayData() {
-        // First, ensure baseline exists for today if we use step counter
         if (stepSensorIsCounter) {
             stepsBaselineForToday = getBaselineForToday();
-            // If baseline absent (-1), we'll wait for first counter event and set baseline then
             if (stepsBaselineForToday == Integer.MIN_VALUE) {
-                // mark waiting - baseline not set yet
                 waitingForFirstCounterEvent = true;
                 stepCount = 0;
             } else {
-                // If we already have a baseline, we cannot compute totalSensorSteps until we get an event,
-                // but UI should show saved DB value if any
-                // Try to load today's saved DB data (fallback)
                 DatabaseHelper.StepData todayData = databaseHelper.getTodayStepData();
                 stepCount = Math.max(todayData.steps, 0);
             }
         } else {
-            // accelerometer or detector: load DB value for today
             DatabaseHelper.StepData todayData = databaseHelper.getTodayStepData();
             stepCount = todayData.steps;
             elapsedTime = todayData.time;
         }
 
-        // update goal and UI
         stepGoal = getStepGoalForToday();
         progressBar.setMax(stepGoal);
         updateTargetText();
         updateUI();
     }
 
-    /**
-     * Save current data into DB.
-     * For STEP_COUNTER devices we also can save the baseline if we want to preserve exact daily counts.
-     */
+
     private void saveCurrentData() {
-        // Lưu baseline nếu đang dùng STEP_COUNTER
         if (stepSensorIsCounter) {
             saveBaselineForToday(getBaselineForToday() == Integer.MIN_VALUE
                     ? stepsBaselineForToday
                     : getBaselineForToday());
         }
 
-        // Chỉ cộng thêm phần chênh lệch so với DB để tránh ghi đè dữ liệu service
         DatabaseHelper.StepData todayData = databaseHelper.getTodayStepData();
         int extraSteps = stepCount - todayData.steps;
         long extraTime = elapsedTime - todayData.time;
@@ -825,10 +821,8 @@ public class HomeFragment extends Fragment {
                         new String[]{Manifest.permission.ACTIVITY_RECOGNITION},
                         PERMISSION_REQUEST_ACTIVITY_RECOGNITION);
             } else {
-                // permission ok -> sensors already detected in setupSensor()
             }
         } else {
-            // older versions don't need runtime activity recognition permission
         }
     }
 
@@ -837,7 +831,6 @@ public class HomeFragment extends Fragment {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == PERMISSION_REQUEST_ACTIVITY_RECOGNITION) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // permission granted, okay to use step sensors
                 setupSensor();
             } else {
                 Toast.makeText(requireContext(), "Ứng dụng cần quyền theo dõi hoạt động để đếm bước chân",
@@ -846,7 +839,6 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    // ---------------- Baseline persistence helpers ----------------
 
     private String getTodayKey() {
         Calendar c = Calendar.getInstance();
@@ -860,48 +852,27 @@ public class HomeFragment extends Fragment {
 
     private int getBaselineForToday() {
         SharedPreferences prefs = requireContext().getSharedPreferences(PREFS_BASELINE, Context.MODE_PRIVATE);
-        // return Integer.MIN_VALUE if not present
         if (!prefs.contains(getTodayKey())) return Integer.MIN_VALUE;
         return prefs.getInt(getTodayKey(), Integer.MIN_VALUE);
     }
 
-    /**
-     * Ensure baseline exists for today if using step counter.
-     * If baseline not present, waitingForFirstCounterEvent=true and baseline will be set when first counter event arrives.
-     */
+
     private void ensureBaselineForToday() {
         if (!stepSensorIsCounter) return;
 
         int saved = getBaselineForToday();
         if (saved == Integer.MIN_VALUE) {
-            // baseline not set: if we already have a totalSensorSteps reading, set baseline now
             if (totalSensorSteps > 0) {
                 stepsBaselineForToday = totalSensorSteps;
                 saveBaselineForToday(stepsBaselineForToday);
                 waitingForFirstCounterEvent = false;
             } else {
-                // wait for first onSensorChanged(TYPE_STEP_COUNTER)
                 waitingForFirstCounterEvent = true;
             }
         } else {
-            // baseline already present - use it
             stepsBaselineForToday = saved;
             waitingForFirstCounterEvent = false;
         }
     }
 
-    /**
-     * If user finishes a walk/activity and you want the UI to show 0 immediately after finish,
-     * call resetBaselineToCurrentSensor() which sets today's baseline = current cumulative sensor value.
-     */
-    private void resetBaselineToCurrentSensor() {
-        if (!stepSensorIsCounter) return;
-        if (totalSensorSteps > 0) {
-            stepsBaselineForToday = totalSensorSteps;
-            saveBaselineForToday(stepsBaselineForToday);
-            // update UI to zero
-            stepCount = 0;
-            updateUI();
-        }
-    }
 }

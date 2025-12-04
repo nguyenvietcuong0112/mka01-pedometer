@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -18,7 +19,7 @@ import com.pedometer.steptracker.runwalk.dailytrack.utils.ProfileDataManager;
 public class ProfileInfoFragment extends Fragment {
 
     private EditText etName, etHeight, etWeight, etWeightGoal;
-    private Button btnNext, btnSkip;
+    private TextView btnNext, btnSkip;
 
     public interface OnInfoCompletedListener {
         void onInfoCompleted();

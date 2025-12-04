@@ -12,9 +12,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * Local storage for keeping track of weight history entries.
- */
 public class WeightHistoryHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "weight_history.db";
@@ -81,7 +78,6 @@ public class WeightHistoryHelper extends SQLiteOpenHelper {
             }
             cursor.close();
         }
-        // reverse to chronological order
         List<WeightEntry> chronological = new ArrayList<>();
         for (int i = entries.size() - 1; i >= 0; i--) {
             chronological.add(entries.get(i));

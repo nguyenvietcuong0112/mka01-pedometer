@@ -43,7 +43,6 @@ public class DetailsReportActivity extends AppCompatActivity {
     private LineChart chart;
     private DatabaseHelper databaseHelper;
 
-//    private Spinner monthSpinner;
     private Spinner statisticSpinner;
 
     private static final int STATISTIC_STEPS = 0;
@@ -128,7 +127,6 @@ private FrameLayout frAdsBanner;
         btnPreviousMonth = findViewById(R.id.btn_previous_month);
         btnNextMonth = findViewById(R.id.btn_next_month);
 
-        // Lấy tháng hiện tại
         Calendar cal = Calendar.getInstance();
         currentMonthIndex = cal.get(Calendar.MONTH);
         updateMonthDisplay();
@@ -161,7 +159,6 @@ private FrameLayout frAdsBanner;
         frAds = findViewById(R.id.frAds);
         frAdsBanner = findViewById(R.id.fr_ads_banner);
 
-//        monthSpinner = findViewById(R.id.monthSpinner);
         statisticSpinner = findViewById(R.id.statisticSpinner);
 
     }
@@ -182,7 +179,6 @@ private FrameLayout frAdsBanner;
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-                // Do nothing
             }
         });
 
@@ -305,33 +301,29 @@ private FrameLayout frAdsBanner;
         leftAxis.setGridLineWidth(0.5f);
         leftAxis.setDrawAxisLine(false);
 
-        // Set appropriate Y-axis maximum based on the data type
         float maxYValue = 50f; // Default
         for (Entry entry : entries) {
             if (entry.getY() > maxYValue) {
                 maxYValue = entry.getY();
             }
         }
-        // Add 20% margin to the maximum value for better visualization
         leftAxis.setAxisMaximum(maxYValue * 1.2f);
 
         chart.getAxisRight().setEnabled(false);
-        chart.getLegend().setEnabled(true); // Enable legend to show the dataset label
+        chart.getLegend().setEnabled(true);
         chart.getDescription().setEnabled(false);
 
         chart.setTouchEnabled(true);
         chart.setDragEnabled(true);
         chart.setScaleEnabled(true);
-        chart.setVisibleXRangeMaximum(7); // Show 7 days at a time
+        chart.setVisibleXRangeMaximum(7);
 
         chart.setBackgroundColor(Color.WHITE);
         chart.setDrawGridBackground(false);
 
-        // Center today's data if we're viewing the current month
         if (todayIndex != -1 && selectedMonth == Calendar.getInstance().get(Calendar.MONTH)) {
-            chart.moveViewToX(todayIndex - 3); // Adjust to center today
+            chart.moveViewToX(todayIndex - 3);
         } else {
-            // If not current month, start from the beginning
             chart.moveViewToX(0);
         }
 
@@ -339,7 +331,6 @@ private FrameLayout frAdsBanner;
     }
 
     private void updateMonthlyDataDisplay(int month) {
-        // Use existing method in DatabaseHelper
         DatabaseHelper.MonthlyStepData monthlyData = databaseHelper.getMonthlyStatData(month, currentStatisticType);
         stepsText.setText(getString(R.string.monthly_steps_format, monthlyData.totalSteps));
         kcalText.setText(getString(R.string.monthly_kcal_format, monthlyData.totalCalories));

@@ -45,7 +45,6 @@ public class AchievementFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.activity_achievement, container, false);
 
-        // Remove bottom navigation from fragment layout since it's in MainActivity
 
         databaseHelper = new DatabaseHelper(requireContext());
         initViews(view);

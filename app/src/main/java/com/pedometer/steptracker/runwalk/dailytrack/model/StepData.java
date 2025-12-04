@@ -16,7 +16,6 @@ public class StepData {
         this.time = 0;
     }
 
-    // Getters and setters
     public int getSteps() { return steps; }
     public void setSteps(int steps) { this.steps = steps; }
 

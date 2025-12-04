@@ -25,7 +25,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COLUMN_DISTANCE = "distance";
     private static final String COLUMN_TIME = "time";
 
-    // default values when only steps are known (service)
     private static final double KCAL_PER_STEP_DEFAULT = 0.04;
 
     public DatabaseHelper(Context context) {
@@ -99,14 +98,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
             db.update(TABLE_NAME, values, COLUMN_DATE + "=?", new String[]{today});
         } else {
-            // Nếu hôm nay chưa có dòng nào, tạo mới với dữ liệu session
             if (cursor != null) {
                 cursor.close();
             }
 
             values.put(COLUMN_DATE, today);
             values.put(COLUMN_STEPS, steps);
-            // Goal mặc định 6000 nếu chưa có – trùng với DEFAULT_GOAL ở HomeFragment
             values.put(COLUMN_GOAL, 6000);
             values.put(COLUMN_CALORIES, calories);
             values.put(COLUMN_DISTANCE, distance);
@@ -272,11 +269,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         List<DailyStepData> dailyData = new ArrayList<>();
 
-        // Get current year
         Calendar calendar = Calendar.getInstance();
         int currentYear = calendar.get(Calendar.YEAR);
 
-        // Create the start and end date of the month
         Calendar startCal = Calendar.getInstance();
         startCal.set(currentYear, monthIndex, 1, 0, 0, 0);
 
@@ -323,11 +318,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         MonthlyStepData monthlyData = new MonthlyStepData();
 
-        // Get current year
         Calendar calendar = Calendar.getInstance();
         int currentYear = calendar.get(Calendar.YEAR);
 
-        // Create the start and end date of the month
         Calendar startCal = Calendar.getInstance();
         startCal.set(currentYear, monthIndex, 1, 0, 0, 0);
 

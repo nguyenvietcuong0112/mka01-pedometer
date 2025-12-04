@@ -34,12 +34,9 @@ public class ProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
-        // Check if this is edit mode (from Settings)
         isEditMode = getIntent().getBooleanExtra("edit_mode", false);
 
-        // If edit mode, allow editing even if profile is completed
         if (!isEditMode) {
-            // Check if profile already completed (onboarding mode)
             if (ProfileDataManager.isProfileCompleted(this)) {
                 goToMain();
                 return;
@@ -49,23 +46,18 @@ public class ProfileActivity extends AppCompatActivity {
         viewPager = findViewById(R.id.viewPager);
         adapter = new ProfilePagerAdapter(this);
         viewPager.setAdapter(adapter);
-        // In edit mode, allow swipe to go back to gender page
         viewPager.setUserInputEnabled(isEditMode);
 
-        // If edit mode, start from info page (page 1)
         if (isEditMode) {
             viewPager.setCurrentItem(1, false);
         }
 
-        // Setup fragments after ViewPager is ready
         viewPager.post(() -> {
             setupFragments();
-            // Also setup when page changes
             viewPager.registerOnPageChangeCallback(new androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback() {
                 @Override
                 public void onPageSelected(int position) {
                     super.onPageSelected(position);
-                    // Setup fragment when it becomes visible
                     setupFragments();
                 }
             });
@@ -75,14 +67,12 @@ public class ProfileActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Re-setup fragments in case they were recreated
         if (viewPager != null) {
             viewPager.post(() -> setupFragments());
         }
     }
 
     private void setupFragments() {
-        // Use FragmentManager to find fragments
         FragmentManager fm = getSupportFragmentManager();
         List<Fragment> fragments = fm.getFragments();
         
@@ -129,10 +119,8 @@ public class ProfileActivity extends AppCompatActivity {
     public void handleInfoCompleted() {
         ProfileDataManager.setProfileCompleted(this, true);
         if (isEditMode) {
-            // In edit mode, just finish and go back to Settings
             finish();
         } else {
-            // In onboarding mode, go to MainActivity
             goToMain();
         }
     }
@@ -140,10 +128,8 @@ public class ProfileActivity extends AppCompatActivity {
     public void handleInfoSkipped() {
         ProfileDataManager.setProfileCompleted(this, true);
         if (isEditMode) {
-            // In edit mode, just finish and go back to Settings
             finish();
         } else {
-            // In onboarding mode, go to MainActivity
             goToMain();
         }
     }

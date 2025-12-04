@@ -22,21 +22,18 @@ public class BottomNavigationHelper {
             return;
         }
 
-        // Get all navigation items
         LinearLayout navSteps = bottomNavView.findViewById(R.id.nav_steps);
         LinearLayout navActivity = bottomNavView.findViewById(R.id.nav_activity);
         LinearLayout navReport = bottomNavView.findViewById(R.id.nav_report);
         LinearLayout navAchievement = bottomNavView.findViewById(R.id.nav_achievement);
         LinearLayout navSettings = bottomNavView.findViewById(R.id.nav_settings);
 
-        // Reset all items
         setNavItemState(navSteps, false);
         setNavItemState(navActivity, false);
         setNavItemState(navReport, false);
         setNavItemState(navAchievement, false);
         setNavItemState(navSettings, false);
 
-        // Set current item as selected
         switch (currentNav) {
             case NAV_STEPS:
                 setNavItemState(navSteps, true);
@@ -87,7 +84,6 @@ public class BottomNavigationHelper {
         ImageView icon = null;
         TextView text = null;
 
-        // Find the correct icon and text views based on the parent ID
         int parentId = navItem.getId();
         if (parentId == R.id.nav_steps) {
             icon = navItem.findViewById(R.id.icon_steps);

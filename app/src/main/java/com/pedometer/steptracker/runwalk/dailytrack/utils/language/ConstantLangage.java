@@ -60,11 +60,9 @@ public class ConstantLangage {
         listLanguage.add(new LanguageModel(context.getString(R.string.english_us), "en-US", false, R.drawable.flag_us));
         listLanguage.add(new LanguageModel(context.getString(R.string.hindi), "hi", false, R.drawable.flag_hi));
         listLanguage.add(new LanguageModel(context.getString(R.string.korea), "ko", false, R.drawable.flag_korea));
-        listLanguage.add(new LanguageModel(context.getString(R.string.iraq), "ar", false, R.drawable.flag_iraq));
         listLanguage.add(new LanguageModel(context.getString(R.string.ukraine), "uk", false, R.drawable.flag_ukraine));
         listLanguage.add(new LanguageModel(context.getString(R.string.argentina), "es", false, R.drawable.flag_argentina));
         listLanguage.add(new LanguageModel(context.getString(R.string.kazakhstan), "kk", false, R.drawable.flag_kazakhstan));
-        listLanguage.add(new LanguageModel(context.getString(R.string.arabic), "ar", false, R.drawable.arabic));
         return listLanguage;
     }
 }

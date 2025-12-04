@@ -1,10 +1,12 @@
 package com.pedometer.steptracker.runwalk.dailytrack.activity;
 
+import android.animation.ValueAnimator;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -21,6 +23,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.pedometer.steptracker.runwalk.dailytrack.R;
 import com.pedometer.steptracker.runwalk.dailytrack.model.WeightHistoryHelper;
 import com.pedometer.steptracker.runwalk.dailytrack.utils.ProfileDataManager;
+import com.pedometer.steptracker.runwalk.dailytrack.utils.ArcProgressView;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -30,7 +33,7 @@ import java.util.Locale;
 
 public class WeightActivity extends AppCompatActivity {
 
-    private TextView tvCurrentWeight, tvWeightGoal, tvWeightDate,btnReset;;
+    private TextView tvCurrentWeight, tvWeightGoal, tvWeightDate, btnReset;
     private TextView tvRecentWeight, tvRecentDate, tvRecentWeightValue;
     private TextView btnEditGoalMain;
 
@@ -38,6 +41,10 @@ public class WeightActivity extends AppCompatActivity {
     private LineChart weightChart;
 
     private WeightHistoryHelper weightHistoryHelper;
+
+    // newly added
+    private ArcProgressView arcView;
+    private FrameLayout badgeStar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,9 +71,37 @@ public class WeightActivity extends AppCompatActivity {
         tvRecentDate = findViewById(R.id.tvRecentDate);
         tvRecentWeightValue = findViewById(R.id.tvRecentWeightValue);
         weightChart = findViewById(R.id.weightChart);
+
+        // new: arc view + badge
+        arcView = findViewById(R.id.arcView);
+        arcView.setSidePaddingDp(50f); // reserve 24dp mỗi bên
+
+        badgeStar = findViewById(R.id.badgeStar);
+
+        // bind badge to arcView so arc can position it
+        if (arcView != null && badgeStar != null) {
+            arcView.setBadgeView(badgeStar);
+        }
     }
 
     private void loadWeightData() {
+        // try to read previously displayed current weight from arcView (if available)
+        float prevCurrent = 0f;
+        if (arcView != null) {
+            try {
+                prevCurrent = arcView.getCurrentWeight();
+            } catch (Exception ignored) {
+                prevCurrent = 0f;
+            }
+        } else {
+            try {
+                prevCurrent = Float.parseFloat(tvCurrentWeight.getText().toString());
+            } catch (Exception ignored) {
+                prevCurrent = 0f;
+            }
+        }
+
+        // load stored values
         float weight = ProfileDataManager.getWeight(getApplicationContext());
         float weightGoal = ProfileDataManager.getWeightGoal(getApplicationContext());
         long updatedAt = ProfileDataManager.getWeightUpdatedAt(getApplicationContext());
@@ -79,12 +114,54 @@ public class WeightActivity extends AppCompatActivity {
             updatedAt = latestEntry.timestamp;
         }
 
-        tvCurrentWeight.setText(String.format(Locale.getDefault(), "%.1f", weight));
+        // Defensive: handle goal == 0 to avoid divide by zero and get sensible behaviour:
+        // - if goal==0 and we have a current weight >0, treat goal = current (so progress = 1)
+        // - if both are zero, fallback goal to 100 to show empty arc
+        if (weightGoal <= 0f) {
+            if (weight > 0f) {
+                weightGoal = weight; // progress = 1 (badge at end)
+            } else {
+                weightGoal = 100f;   // both zero -> show empty baseline
+            }
+        }
+
+        // update UI texts that do not animate
         tvWeightGoal.setText(String.format(Locale.getDefault(), "%.1fkg", weightGoal));
         tvWeightDate.setText(formatDate(updatedAt > 0 ? updatedAt : System.currentTimeMillis()));
 
         updateRecentSection(latestEntry, weightGoal);
+
+        // ensure values are finite and clamped
+        if (Float.isNaN(weight)) weight = 0f;
+        if (Float.isNaN(weightGoal) || weightGoal <= 0f) weightGoal = 100f;
+
+        // set arc goal and animate or set current
+        if (arcView != null) {
+            arcView.setGoalWeight(weightGoal);
+
+            // clamp prevCurrent and weight
+            prevCurrent = Math.max(0f, prevCurrent);
+            weight = Math.max(0f, weight);
+
+            // If there is no meaningful previous value (first load), just set directly without animation.
+            // If prevCurrent equals current, just set (no animation).
+            boolean hasPrev = prevCurrent > 0f && prevCurrent != weight;
+
+            if (!hasPrev) {
+                // first load or same value -> set directly
+                arcView.setCurrentWeight(weight);
+                tvCurrentWeight.setText(String.format(Locale.getDefault(), "%.1f", weight));
+            } else {
+                // animate from prev -> new
+                arcView.animateCurrentWeight(prevCurrent, weight, 700);
+                animateCurrentWeightText(prevCurrent, weight, 700);
+            }
+        } else {
+            // no arc view, just set text
+            tvCurrentWeight.setText(String.format(Locale.getDefault(), "%.1f", weight));
+        }
     }
+
 
     private void updateRecentSection(WeightHistoryHelper.WeightEntry latestEntry, float goalWeight) {
         if (latestEntry != null) {
@@ -204,6 +281,16 @@ public class WeightActivity extends AppCompatActivity {
         dialog.show();
     }
 
+    private void animateCurrentWeightText(float from, float to, long duration) {
+        ValueAnimator numberAnim = ValueAnimator.ofFloat(from, to);
+        numberAnim.setDuration(duration);
+        numberAnim.addUpdateListener(anim -> {
+            float v = (float) anim.getAnimatedValue();
+            tvCurrentWeight.setText(String.format(Locale.getDefault(), "%.1f", v));
+        });
+        numberAnim.start();
+    }
+
     private String formatDate(long timeMillis) {
         if (timeMillis <= 0) return "-";
         SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
@@ -248,4 +335,3 @@ public class WeightActivity extends AppCompatActivity {
         }
     }
 }
-
