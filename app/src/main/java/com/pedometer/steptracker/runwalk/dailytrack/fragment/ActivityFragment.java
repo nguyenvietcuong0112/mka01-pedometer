@@ -478,6 +478,12 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
         updateButtonState();
         updateStats();
         showTrackingMode();
+
+        // Ẩn nút back khi đang tracking
+        if (getActivity() instanceof RunningActivity) {
+            ((RunningActivity) getActivity()).setBackButtonVisible(false);
+        }
+
         Toast.makeText(requireContext(), "Let's run!", Toast.LENGTH_SHORT).show();
     }
 
@@ -567,6 +573,11 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
         resetSession();
         updateButtonState();
         updateStats();
+
+        // Hiện lại nút back sau khi finish
+        if (getActivity() instanceof RunningActivity) {
+            ((RunningActivity) getActivity()).setBackButtonVisible(true);
+        }
 
         if (isTrackingMode && getActivity() != null) {
             getActivity().finish();
@@ -973,11 +984,26 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
         }
     }
 
-    private void initLocationOnStart() {
-        if (hasLocationPermission() && googleMap != null) {
-            moveToCurrentLocation();
-        } else if (!hasLocationPermission() && googleMap != null) {
-            requestLocationPermission();
+    public boolean isTracking() {
+        return trackingState == TrackingState.RUNNING || trackingState == TrackingState.PAUSED;
+    }
+
+    // Buộc dừng tracking (khi user chọn exit)
+    public void forceStopTracking() {
+        if (trackingState == TrackingState.RUNNING || trackingState == TrackingState.PAUSED) {
+            if (trackingState == TrackingState.RUNNING) {
+                accumulatedTimeMillis += System.currentTimeMillis() - sessionStartMillis;
+            }
+
+            trackingState = TrackingState.IDLE;
+
+            if (sensorManager != null) {
+                sensorManager.unregisterListener(stepSensorListener);
+            }
+
+            stopLocationUpdates();
+            timerHandler.removeCallbacks(timerRunnable);
+            resetSession();
         }
     }
 
