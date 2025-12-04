@@ -5,6 +5,9 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -30,6 +33,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 
@@ -43,6 +47,8 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.JointType;
 import com.google.android.gms.maps.model.LatLng;
@@ -181,6 +187,9 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
         }
     };
 
+    private FrameLayout mapLoadingOverlay;
+    private boolean isMapReady = false;
+
 
 
     @Override
@@ -277,6 +286,9 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
         pauseButton = root.findViewById(R.id.activityPauseButton);
         resumeButton = root.findViewById(R.id.activityResumeButton);
         finishButton = root.findViewById(R.id.activityFinishButton);
+
+        mapView = root.findViewById(R.id.activityMapView);
+        mapLoadingOverlay = root.findViewById(R.id.mapLoadingOverlay);
     }
 
 
@@ -285,12 +297,13 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
         recentHeader.setVisibility(View.GONE);
         recentCard.setVisibility(View.GONE);
         emptyRecentText.setVisibility(View.GONE);
-
         scrollView.setNestedScrollingEnabled(false);
 
-        ViewGroup.LayoutParams params = mapView.getLayoutParams();
-        params.height = (int) (450 * getResources().getDisplayMetrics().density);
-        mapView.setLayoutParams(params);
+        if (isMapReady) {
+            ViewGroup.LayoutParams params = mapView.getLayoutParams();
+            params.height = (int) (450 * getResources().getDisplayMetrics().density);
+            mapView.setLayoutParams(params);
+        }
     }
 
     private void showNormalMode() {
@@ -689,10 +702,14 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
     private void updateLiveMarker(LatLng point) {
         if (googleMap == null) return;
         if (liveMarker == null) {
+            BitmapDescriptor icon = bitmapDescriptorFromVector(requireContext(), R.drawable.ic_nav_activity, 0, 36, 36);
             liveMarker = googleMap.addMarker(new MarkerOptions()
                     .position(point)
                     .title("Vị trí hiện tại")
-                    .flat(true));
+                    .flat(true)
+                    .icon(icon)
+                    .anchor(0.5f, 0.5f) // center icon on location
+            );
         } else {
             liveMarker.setPosition(point);
         }
@@ -704,6 +721,28 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
                     .position(point)
                     .title("Điểm xuất phát"));
         }
+    }
+
+
+
+    private BitmapDescriptor bitmapDescriptorFromVector(Context context, int vectorResId, int tintColor, int widthDp, int heightDp) {
+        Drawable vectorDrawable = ContextCompat.getDrawable(context, vectorResId);
+        if (vectorDrawable == null) return null;
+
+        // optional: tint
+        if (tintColor != 0) {
+            DrawableCompat.setTint(vectorDrawable, tintColor);
+        }
+
+        int widthPx = (int) (widthDp * context.getResources().getDisplayMetrics().density);
+        int heightPx = (int) (heightDp * context.getResources().getDisplayMetrics().density);
+
+        vectorDrawable.setBounds(0, 0, widthPx, heightPx);
+        Bitmap bitmap = Bitmap.createBitmap(widthPx, heightPx, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        vectorDrawable.draw(canvas);
+
+        return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
 
     private void moveCameraSmooth(LatLng point) {
@@ -871,12 +910,30 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
         googleMap.getUiSettings().setCompassEnabled(false);
         googleMap.getUiSettings().setMapToolbarEnabled(false);
         enableMyLocationLayer();
-
         googleMap.setPadding(0, 0, 0, 200);
 
+        // Ẩn loading và hiện map với animation
+        hideMapLoading();
+
         moveToCurrentLocation();
+        isMapReady = true;
+    }
 
+    private void hideMapLoading() {
+        if (mapLoadingOverlay != null && mapView != null) {
+            // Fade out loading overlay
+            mapLoadingOverlay.animate()
+                    .alpha(0f)
+                    .setDuration(300)
+                    .withEndAction(() -> mapLoadingOverlay.setVisibility(View.GONE))
+                    .start();
 
+            // Fade in map
+            mapView.animate()
+                    .alpha(1f)
+                    .setDuration(300)
+                    .start();
+        }
     }
 
 
