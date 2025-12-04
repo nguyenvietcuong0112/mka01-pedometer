@@ -25,7 +25,6 @@
 
     </LinearLayout>
 
-    <!-- Loading Overlay cho Map -->
     <FrameLayout
         android:id="@+id/mapLoadingOverlay"
         android:layout_width="0dp"
@@ -85,12 +84,24 @@
 
             </FrameLayout>
 
+            <FrameLayout
+                android:id="@+id/frAds"
+                android:layout_marginTop="10dp"
+                android:layout_width="match_parent"
+                android:layout_marginHorizontal="@dimen/_10sdp"
+                android:layout_height="wrap_content"
+               >
+
+                <include layout="@layout/ads_shimmer_native_home" />
+
+            </FrameLayout>
+
             <TextView
                 android:id="@+id/activityTimerValue"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingHorizontal="@dimen/_10sdp"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="10dp"
                 android:gravity="center"
                 android:fontFamily="@font/montserrat_bold"
                 android:text="00:00:00"

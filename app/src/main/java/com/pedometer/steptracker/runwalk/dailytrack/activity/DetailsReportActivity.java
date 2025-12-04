@@ -72,7 +72,6 @@ private FrameLayout frAdsBanner;
         loadMonthlyData();
         setupMonthNavigation();
         setupChart();
-        loadAds();
         loadNativeBanner();
     }
 

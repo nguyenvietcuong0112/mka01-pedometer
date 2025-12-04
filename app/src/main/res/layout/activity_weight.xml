@@ -58,7 +58,8 @@
     <androidx.core.widget.NestedScrollView
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="@dimen/_5sdp"
+        app:layout_constraintBottom_toTopOf="@id/fr_ads_banner"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/headerBar">
@@ -144,11 +145,23 @@
 
             </FrameLayout>
 
+            <FrameLayout
+                android:id="@+id/frAds"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/_10sdp"
+                app:layout_constraintTop_toBottomOf="@+id/weightProgressContainer">
+
+
+                <include layout="@layout/ads_shimmer_native_home" />
+
+            </FrameLayout>
+
             <TextView
                 android:id="@+id/btnEditGoalMain"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
-                android:layout_marginTop="@dimen/_20sdp"
+                android:layout_marginTop="@dimen/_10sdp"
                 android:background="@drawable/bg_view_report_button"
                 android:backgroundTint="@color/blue"
                 android:fontFamily="@font/montserrat_bold"
@@ -156,7 +169,7 @@
                 android:text="Edit Goal"
                 android:textColor="#FFFFFF"
                 android:textSize="16sp"
-                app:layout_constraintTop_toBottomOf="@+id/weightProgressContainer" />
+                app:layout_constraintTop_toBottomOf="@+id/frAds" />
 
             <!-- Statistic Section -->
             <LinearLayout
@@ -251,5 +264,17 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
+
+    <FrameLayout
+        android:id="@+id/fr_ads_banner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:background="@color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:visibility="visible">
+
+        <include layout="@layout/ad_native_container_banner_1" />
+    </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

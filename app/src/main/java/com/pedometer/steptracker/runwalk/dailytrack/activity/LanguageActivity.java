@@ -22,7 +22,6 @@ import com.pedometer.steptracker.runwalk.dailytrack.activity.nativefull.Activity
 import com.pedometer.steptracker.runwalk.dailytrack.base.BaseActivity;
 import com.pedometer.steptracker.runwalk.dailytrack.databinding.ActivityLanguageBinding;
 import com.pedometer.steptracker.runwalk.dailytrack.databinding.ActivityLanguageStartBinding;
-import com.pedometer.steptracker.runwalk.dailytrack.utils.NativeFullLanguage;
 import com.pedometer.steptracker.runwalk.dailytrack.utils.SharePreferenceUtils;
 import com.pedometer.steptracker.runwalk.dailytrack.utils.SystemConfiguration;
 import com.pedometer.steptracker.runwalk.dailytrack.utils.SystemUtil;

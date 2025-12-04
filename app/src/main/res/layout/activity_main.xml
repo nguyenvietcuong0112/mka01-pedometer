@@ -18,8 +18,22 @@
         android:id="@+id/bottomNavigation"
         layout="@layout/bottom_navigation_bar"
         android:layout_width="match_parent"
+        app:layout_constraintBottom_toTopOf="@id/fr_ads_banner"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        />
+
+    <FrameLayout
+        android:id="@+id/fr_ads_banner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:visibility="visible">
+
+        <include layout="@layout/ad_native_container_banner_1" />
+    </FrameLayout>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 

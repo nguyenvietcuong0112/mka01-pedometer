@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
@@ -30,6 +31,7 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
@@ -37,6 +39,9 @@ import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.gms.ads.LoadAdError;
+import com.google.android.gms.ads.nativead.NativeAd;
+import com.google.android.gms.ads.nativead.NativeAdView;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -57,7 +62,14 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.RoundCap;
+import com.mallegan.ads.callback.InterCallback;
+import com.mallegan.ads.callback.NativeCallback;
+import com.mallegan.ads.util.Admob;
 import com.pedometer.steptracker.runwalk.dailytrack.R;
+import com.pedometer.steptracker.runwalk.dailytrack.activity.StepGoalActivity;
+import com.pedometer.steptracker.runwalk.dailytrack.activity.WeightActivity;
+import com.pedometer.steptracker.runwalk.dailytrack.activity.nativefull.ActivityFullCallback;
+import com.pedometer.steptracker.runwalk.dailytrack.activity.nativefull.ActivityLoadNativeFullV2;
 import com.pedometer.steptracker.runwalk.dailytrack.model.DatabaseHelper;
 import com.pedometer.steptracker.runwalk.dailytrack.activity.RunningActivity;
 
@@ -66,6 +78,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import com.google.android.gms.maps.model.MapStyleOptions;
+import com.pedometer.steptracker.runwalk.dailytrack.utils.SharePreferenceUtils;
+
 
 public class ActivityFragment extends Fragment implements OnMapReadyCallback {
 
@@ -98,7 +113,7 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
     private TrackingState trackingState = TrackingState.IDLE;
     private boolean isTrackingMode = false;
 
-    private FrameLayout countdownOverlay;
+    private FrameLayout countdownOverlay,frAds;
     private TextView countdownText;
 
     private View headerBar;
@@ -272,6 +287,7 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
         emptyRecentText = root.findViewById(R.id.activityEmptyRecentText);
         recentHeader = root.findViewById(R.id.recentHeader);
         scrollView = root.findViewById(R.id.activityScroll);
+        frAds = root.findViewById(R.id.frAds);
 
         listRecent = root.findViewById(R.id.listRecent);
 
@@ -340,7 +356,37 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
         }
         pauseButton.setOnClickListener(v -> pauseSession());
         resumeButton.setOnClickListener(v -> resumeSession());
-        finishButton.setOnClickListener(v -> finishSession());
+        finishButton.setOnClickListener(v -> {
+            if (!SharePreferenceUtils.isOrganic(requireActivity())) {
+                Admob.getInstance().loadAndShowInter((AppCompatActivity) getContext(),getString(R.string.inter_finish), 0 , 30000, new InterCallback() {
+                    @Override
+                    public void onAdClosed() {
+                        super.onAdClosed();
+                        ActivityLoadNativeFullV2.open(getActivity(), getString(R.string.native_full_inter_finish), new ActivityFullCallback() {
+                            @Override
+                            public void onResultFromActivityFull() {
+                                finishSession();
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onAdFailedToLoad(LoadAdError i) {
+                        super.onAdFailedToLoad(i);
+                        ActivityLoadNativeFullV2.open(getActivity(), getString(R.string.native_full_inter_finish), new ActivityFullCallback() {
+                            @Override
+                            public void onResultFromActivityFull() {
+                                finishSession();
+                            }
+                        });
+                    }
+                } );
+
+            } else {
+                finishSession();
+            }
+
+        });
     }
 
     private void initMap(Bundle savedInstanceState) {
@@ -923,11 +969,33 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
         enableMyLocationLayer();
         googleMap.setPadding(0, 0, 0, 200);
 
+        applyRetroMapTheme();
+
+
         // Ẩn loading và hiện map với animation
         hideMapLoading();
 
         moveToCurrentLocation();
         isMapReady = true;
+    }
+
+    private void applyRetroMapTheme() {
+        if (googleMap == null) return;
+
+        try {
+            // Sử dụng theme retro đã tạo
+            MapStyleOptions style = MapStyleOptions.loadRawResourceStyle(
+                    requireContext(),
+                    R.raw.map_style_retro
+            );
+
+            boolean success = googleMap.setMapStyle(style);
+            if (!success) {
+                Log.e("ActivityFragment", "Unable to apply map style");
+            }
+        } catch (Resources.NotFoundException e) {
+            Log.e("ActivityFragment", "Map style file not found", e);
+        }
     }
 
     private void hideMapLoading() {
@@ -946,6 +1014,46 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
                     .start();
         }
     }
+    private void loadAds() {
+        if (!isAdded()) return;
+
+        Context ctx = getContext();
+        if (ctx == null) return;
+
+        if (!SharePreferenceUtils.isOrganic(ctx)) {
+
+            Admob.getInstance().loadNativeAd(ctx, getString(R.string.native_activity), new NativeCallback() {
+
+                @Override
+                public void onNativeAdLoaded(NativeAd nativeAd) {
+                    super.onNativeAdLoaded(nativeAd);
+
+                    // kiểm tra lại vì callback chạy async
+                    if (!isAdded() || getContext() == null) return;
+
+                    LayoutInflater inflater = LayoutInflater.from(getContext());
+                    NativeAdView adView = (NativeAdView) inflater.inflate(R.layout.layout_native_btn_top, null);
+
+                    frAds.removeAllViews();
+                    frAds.addView(adView);
+                    Admob.getInstance().pushAdsToViewCustom(nativeAd, adView);
+                }
+
+                @Override
+                public void onAdFailedToLoad() {
+                    super.onAdFailedToLoad();
+
+                    if (!isAdded()) return;
+                    frAds.setVisibility(View.GONE);
+                }
+            });
+
+        } else {
+            frAds.removeAllViews();
+            frAds.setVisibility(View.GONE);
+        }
+    }
+
 
 
     @SuppressLint("MissingPermission")
@@ -1010,6 +1118,7 @@ public class ActivityFragment extends Fragment implements OnMapReadyCallback {
     @Override
     public void onResume() {
         super.onResume();
+        loadAds();
         if (mapView != null) {
             mapView.onResume();
         }

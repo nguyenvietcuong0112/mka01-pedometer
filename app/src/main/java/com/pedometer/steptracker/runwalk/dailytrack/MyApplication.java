@@ -16,10 +16,13 @@ import com.google.firebase.FirebaseApp;
 import com.mallegan.ads.util.AdsApplication;
 import com.mallegan.ads.util.AppOpenManager;
 import com.mallegan.ads.util.AppsFlyer;
-import com.pedometer.steptracker.runwalk.dailytrack.activity.IntroActivity;
 import com.pedometer.steptracker.runwalk.dailytrack.activity.LanguageActivity;
+import com.pedometer.steptracker.runwalk.dailytrack.activity.MainActivity;
+import com.pedometer.steptracker.runwalk.dailytrack.activity.PermissionActivity;
+import com.pedometer.steptracker.runwalk.dailytrack.activity.ProfileActivity;
 import com.pedometer.steptracker.runwalk.dailytrack.activity.SplashActivity;
 import com.pedometer.steptracker.runwalk.dailytrack.activity.SplashActivityUninstall;
+import com.pedometer.steptracker.runwalk.dailytrack.activity.fragmentIntro.IntroActivityNew;
 import com.pedometer.steptracker.runwalk.dailytrack.utils.AppActivityTracker;
 import com.pedometer.steptracker.runwalk.dailytrack.utils.SharePreferenceUtils;
 //import com.stepcounter.healthapplines.pedometer.steptracker.com.pedometer.steptracker.runwalk.dailytrack.utils.TimerManager;
@@ -58,41 +61,14 @@ public class MyApplication extends AdsApplication {
         FirebaseApp.initializeApp(this);
         AppOpenManager.getInstance().disableAppResumeWithActivity(SplashActivity.class);
         AppOpenManager.getInstance().disableAppResumeWithActivity(LanguageActivity.class);
-        AppOpenManager.getInstance().disableAppResumeWithActivity(IntroActivity.class);
+        AppOpenManager.getInstance().disableAppResumeWithActivity(MainActivity.class);
+        AppOpenManager.getInstance().disableAppResumeWithActivity(IntroActivityNew.class);
+        AppOpenManager.getInstance().disableAppResumeWithActivity(ProfileActivity.class);
+        AppOpenManager.getInstance().disableAppResumeWithActivity(PermissionActivity.class);
 
         FacebookSdk.setClientToken(getString(R.string.facebook_client_token));
 
-        if (!SharePreferenceUtils.isOrganic(getApplicationContext())) {
-            AppsFlyer.getInstance().initAppFlyer(this, getString(R.string.AF_DEV_KEY), true);
-
-        } else {
-            AppsFlyerConversionListener conversionListener = new AppsFlyerConversionListener() {
-                @Override
-                public void onConversionDataSuccess(Map<String, Object> conversionData) {
-                    String mediaSource = (String) conversionData.get("media_source");
-
-                    SharePreferenceUtils.setOrganicValue(getApplicationContext(), mediaSource == null || mediaSource.isEmpty() || mediaSource.equals("organic"));
-                }
-
-                @Override
-                public void onConversionDataFail(String errorMessage) {
-                    // Handle conversion data failure
-                }
-
-                @Override
-                public void onAppOpenAttribution(Map<String, String> attributionData) {
-                    // Handle app open attribution
-                }
-
-                @Override
-                public void onAttributionFailure(String errorMessage) {
-                    // Handle attribution failure
-                }
-            };
-
-            AppsFlyer.getInstance().initAppFlyer(this, getString(R.string.AF_DEV_KEY), true, conversionListener);
-
-        }
+        AppsFlyer.getInstance().initAppFlyer(this, getString(R.string.AF_DEV_KEY), true);
         AppActivityTracker.getInstance().register(this);
 
     }

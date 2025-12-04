@@ -1,6 +1,7 @@
 package com.pedometer.steptracker.runwalk.dailytrack.fragment;
 
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -91,23 +92,41 @@ public class SettingsFragment extends Fragment {
     }
 
     private void loadAds() {
-        Admob.getInstance().loadNativeAd(requireContext(), getString(R.string.native_setting), new NativeCallback() {
-            @Override
-            public void onNativeAdLoaded(NativeAd nativeAd) {
-                super.onNativeAdLoaded(nativeAd);
-                NativeAdView adView = (NativeAdView) LayoutInflater.from(requireContext()).inflate(R.layout.layout_native_language_non_organic, null);
-                binding.frAds.setVisibility(View.VISIBLE);
-                binding.frAds.removeAllViews();
-                binding.frAds.addView(adView);
-                Admob.getInstance().pushAdsToViewCustom(nativeAd, adView);
-            }
+        if(!SharePreferenceUtils.isOrganic(requireContext())) {
+            Context safeContext = getContext();
+            if (safeContext == null) return;
 
-            @Override
-            public void onAdFailedToLoad() {
-                super.onAdFailedToLoad();
-                binding.frAds.setVisibility(View.GONE);
-            }
-        });
+            Admob.getInstance().loadNativeAd(safeContext, getString(R.string.native_setting), new NativeCallback() {
+
+                @Override
+                public void onNativeAdLoaded(NativeAd nativeAd) {
+                    super.onNativeAdLoaded(nativeAd);
+
+                    if (!isAdded() || getContext() == null) return;
+
+                    LayoutInflater inflater = LayoutInflater.from(getContext());
+                    NativeAdView adView = (NativeAdView) inflater.inflate(R.layout.layout_native_btn_top, null);
+
+                    if (binding.frAds == null) return;
+
+                    binding.frAds.removeAllViews();
+                    binding.frAds.addView(adView);
+                    Admob.getInstance().pushAdsToViewCustom(nativeAd, adView);
+                }
+
+                @Override
+                public void onAdFailedToLoad() {
+                    super.onAdFailedToLoad();
+                    if (!isAdded() || binding.frAds == null) return;
+                    binding.frAds.setVisibility(View.GONE);
+                }
+            });
+        } else {
+            binding.frAds.removeAllViews();
+            binding.frAds.setVisibility(View.GONE);
+        }
+
+
     }
 
     @Override

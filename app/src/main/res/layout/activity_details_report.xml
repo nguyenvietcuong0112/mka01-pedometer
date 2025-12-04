@@ -33,7 +33,7 @@
         android:layout_height="0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/frAds"
+        app:layout_constraintBottom_toBottomOf="parent"
         android:layout_marginTop="@dimen/_10sdp"
         app:layout_constraintTop_toBottomOf="@+id/headerBar">
 
@@ -200,16 +200,33 @@
             </LinearLayout>
 
             <FrameLayout
-                android:id="@+id/fr_ads_banner"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/white"
-                app:layout_constraintTop_toTopOf="parent"
-                android:layout_marginVertical="@dimen/_5sdp"
-                android:visibility="visible">
+                android:layout_marginTop="@dimen/_10sdp"
+                >
+                <FrameLayout
+                    android:id="@+id/frAdsCollap"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/white"
+                    android:orientation="vertical"
+                   >
 
-                <include layout="@layout/ad_native_container_banner_1" />
+
+                    <include layout="@layout/ads_shimmer_native_no_media" />
+                </FrameLayout>
+
+                <FrameLayout
+                    android:id="@+id/frAdsHomeTop"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/white"
+                    android:orientation="vertical"
+                    >
+
+                </FrameLayout>
             </FrameLayout>
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -328,18 +345,6 @@
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-
-    <FrameLayout
-        android:id="@+id/frAds"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/listView"
-        app:layout_constraintBottom_toBottomOf="parent"
-        >
-
-        <include layout="@layout/ads_shimmer_native_home" />
-
-    </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 

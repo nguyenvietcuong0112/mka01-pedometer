@@ -92,9 +92,9 @@ public class StepGoalActivity extends AppCompatActivity {
                 super.onNativeAdLoaded(nativeAd);
                 NativeAdView adView = new NativeAdView(StepGoalActivity.this);
                 if (!SharePreferenceUtils.isOrganic(StepGoalActivity.this)) {
-                    adView = (NativeAdView) LayoutInflater.from(StepGoalActivity.this).inflate(R.layout.layout_native_language_non_organic, null);
+                    adView = (NativeAdView) LayoutInflater.from(StepGoalActivity.this).inflate(R.layout.layout_native_btn_top, null);
                 } else {
-                    adView = (NativeAdView) LayoutInflater.from(StepGoalActivity.this).inflate(R.layout.layout_native_language, null);
+                    adView = (NativeAdView) LayoutInflater.from(StepGoalActivity.this).inflate(R.layout.layout_native_btn_bottom, null);
                 }
                 frAds.removeAllViews();
                 frAds.addView(adView);

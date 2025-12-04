@@ -81,19 +81,6 @@
             android:screenOrientation="portrait"
             android:theme="@style/Theme.Design.NoActionBar" />
 
-
-        <activity
-            android:name=".activity.GuideActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.Design.NoActionBar" />
-        <activity
-            android:name=".activity.InterestActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.Design.NoActionBar" />
-        <activity
-            android:name=".utils.NativeFullLanguage"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.Design.NoActionBar" />
         <activity
             android:name=".utils.LoadNativeFullNew"
             android:screenOrientation="portrait"
@@ -125,12 +112,6 @@
             android:theme="@style/Theme.Design.NoActionBar"
             android:screenOrientation="portrait" />
 
-
-
-        <activity
-            android:name=".activity.IntroActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.Design.NoActionBar" />
 
         <activity
             android:name=".activity.LanguageActivity"

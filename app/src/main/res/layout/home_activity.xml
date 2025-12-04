@@ -12,7 +12,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:paddingBottom="@dimen/_5sdp"
-        app:layout_constraintBottom_toTopOf="@+id/frAdsCollap"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -110,11 +110,38 @@
                     android:orientation="horizontal"
                     />
 
-                <!-- Main Content: Left Cards + Right Circle -->
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/_10sdp"
+                    >
+                    <FrameLayout
+                        android:id="@+id/frAdsCollap"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@color/white"
+                        android:orientation="vertical"
+                        app:layout_constraintBottom_toBottomOf="parent">
+
+
+                        <include layout="@layout/ads_shimmer_native_no_media" />
+                    </FrameLayout>
+
+                    <FrameLayout
+                        android:id="@+id/frAdsHomeTop"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@color/white"
+                        android:orientation="vertical"
+                        app:layout_constraintBottom_toBottomOf="parent">
+
+                    </FrameLayout>
+                </FrameLayout>
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/_15sdp"
+                    android:layout_marginTop="@dimen/_10sdp"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
@@ -390,17 +417,6 @@
 
             </LinearLayout>
 
-            <FrameLayout
-                android:id="@+id/fr_ads_banner"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginVertical="@dimen/_5sdp"
-                android:background="@color/white"
-                android:visibility="visible"
-                app:layout_constraintTop_toBottomOf="@id/toolbar">
-
-                <include layout="@layout/ad_native_container_banner_1" />
-            </FrameLayout>
 
 
             <LinearLayout
@@ -412,7 +428,7 @@
                 android:background="@color/transparent"
                 android:orientation="vertical"
                 android:paddingVertical="@dimen/_10sdp"
-                app:layout_constraintTop_toBottomOf="@+id/fr_ads_banner">
+                app:layout_constraintTop_toBottomOf="@+id/toolbar">
 
                 <LinearLayout
                     android:id="@+id/header"
@@ -939,26 +955,6 @@
     </androidx.core.widget.NestedScrollView>
 
 
-    <FrameLayout
-        android:id="@+id/frAdsCollap"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/white"
-        android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="parent">
 
-
-        <include layout="@layout/ads_shimmer_native_no_media" />
-    </FrameLayout>
-
-    <FrameLayout
-        android:id="@+id/frAdsHomeTop"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/white"
-        android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="parent">
-
-    </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

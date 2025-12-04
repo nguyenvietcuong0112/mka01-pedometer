@@ -19,11 +19,16 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.ValueFormatter;
+import com.google.android.gms.ads.nativead.NativeAd;
+import com.google.android.gms.ads.nativead.NativeAdView;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.mallegan.ads.callback.NativeCallback;
+import com.mallegan.ads.util.Admob;
 import com.pedometer.steptracker.runwalk.dailytrack.R;
 import com.pedometer.steptracker.runwalk.dailytrack.model.WeightHistoryHelper;
 import com.pedometer.steptracker.runwalk.dailytrack.utils.ProfileDataManager;
 import com.pedometer.steptracker.runwalk.dailytrack.utils.ArcProgressView;
+import com.pedometer.steptracker.runwalk.dailytrack.utils.SharePreferenceUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -42,6 +47,9 @@ public class WeightActivity extends AppCompatActivity {
 
     private WeightHistoryHelper weightHistoryHelper;
 
+    private FrameLayout frAdsBanner,frAds;
+
+
     // newly added
     private ArcProgressView arcView;
     private FrameLayout badgeStar;
@@ -57,6 +65,7 @@ public class WeightActivity extends AppCompatActivity {
         loadWeightData();
         loadChartData();
         setupClickListeners();
+
     }
 
     private void initializeViews() {
@@ -71,17 +80,67 @@ public class WeightActivity extends AppCompatActivity {
         tvRecentDate = findViewById(R.id.tvRecentDate);
         tvRecentWeightValue = findViewById(R.id.tvRecentWeightValue);
         weightChart = findViewById(R.id.weightChart);
+        frAdsBanner = findViewById(R.id.fr_ads_banner);
+        frAds = findViewById(R.id.frAds);
 
-        // new: arc view + badge
         arcView = findViewById(R.id.arcView);
-        arcView.setSidePaddingDp(50f); // reserve 24dp mỗi bên
+        arcView.setSidePaddingDp(50f);
 
         badgeStar = findViewById(R.id.badgeStar);
 
-        // bind badge to arcView so arc can position it
         if (arcView != null && badgeStar != null) {
             arcView.setBadgeView(badgeStar);
         }
+    }
+
+
+    private void loadAdsBanner() {
+        if(!SharePreferenceUtils.isOrganic(WeightActivity.this)) {
+            Admob.getInstance().loadNativeAd(this, getString(R.string.native_banner_weight), new NativeCallback() {
+                @Override
+                public void onNativeAdLoaded(NativeAd nativeAd) {
+                    super.onNativeAdLoaded(nativeAd);
+                    NativeAdView adView = (NativeAdView) LayoutInflater.from(WeightActivity.this).inflate(R.layout.ad_native_admob_banner_1, null);
+                    frAdsBanner.setVisibility(View.VISIBLE);
+                    frAdsBanner.removeAllViews();
+                    frAdsBanner.addView(adView);
+                    Admob.getInstance().pushAdsToViewCustom(nativeAd, adView);
+                }
+
+                @Override
+                public void onAdFailedToLoad() {
+                    super.onAdFailedToLoad();
+                    frAdsBanner.setVisibility(View.GONE);
+                }
+            });
+
+        } else {
+            frAdsBanner.removeAllViews();
+            frAdsBanner.setVisibility(View.GONE);
+
+        }
+    }
+
+    private void loadAds() {
+        Admob.getInstance().loadNativeAd(this, getString(R.string.native_weight), new NativeCallback() {
+
+            @Override
+            public void onNativeAdLoaded(NativeAd nativeAd) {
+                super.onNativeAdLoaded(nativeAd);
+                NativeAdView adView  = (NativeAdView) LayoutInflater.from(WeightActivity.this).inflate(R.layout.layout_native_btn_bottom, null);
+
+                frAds.removeAllViews();
+                frAds.addView(adView);
+                Admob.getInstance().pushAdsToViewCustom(nativeAd, adView);
+            }
+
+
+            @Override
+            public void onAdFailedToLoad() {
+                super.onAdFailedToLoad();
+                frAds.setVisibility(View.GONE);
+            }
+        });
     }
 
     private void loadWeightData() {
@@ -316,6 +375,8 @@ public class WeightActivity extends AppCompatActivity {
         super.onResume();
         loadWeightData();
         loadChartData();
+        loadAds();
+        loadAdsBanner();
     }
 
     private static class LabelFormatter extends ValueFormatter {

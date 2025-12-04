@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.mallegan.ads.util.Admob;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -42,16 +43,9 @@ public class SharePreferenceUtils {
     }
 
     public static boolean isOrganic(Context context) {
-        SharedPreferences pref = context.getSharedPreferences("data", Context.MODE_PRIVATE);
-        return pref.getBoolean("organic", true);
+        return !Admob.getInstance().isLoadFullAds();
     }
 
-    public static void setOrganicValue(Context context, boolean value) {
-        SharedPreferences pre = context.getSharedPreferences("data", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = pre.edit();
-        editor.putBoolean("organic", value);
-        editor.apply();
-    }
 
     public int getCurrentValue() {
         return sharePreference.getInt(COUNTER_KEY, 0);

@@ -1,5 +1,6 @@
 package com.pedometer.steptracker.runwalk.dailytrack.fragment;
 
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -8,6 +9,7 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -15,8 +17,14 @@ import android.widget.TextView;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.gms.ads.nativead.NativeAd;
+import com.google.android.gms.ads.nativead.NativeAdView;
+import com.mallegan.ads.callback.NativeCallback;
+import com.mallegan.ads.util.Admob;
 import com.pedometer.steptracker.runwalk.dailytrack.R;
+import com.pedometer.steptracker.runwalk.dailytrack.activity.StepGoalActivity;
 import com.pedometer.steptracker.runwalk.dailytrack.model.DatabaseHelper;
+import com.pedometer.steptracker.runwalk.dailytrack.utils.SharePreferenceUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -34,6 +42,7 @@ public class AchievementFragment extends Fragment {
     private TextView labelCurrent;
     private TextView textCurrentValue;
     private GridLayout gridAchievements;
+    private FrameLayout frAds;
 
     private DatabaseHelper databaseHelper;
     private int currentMode = MODE_STEPS;
@@ -52,7 +61,7 @@ public class AchievementFragment extends Fragment {
         setupShare(view);
         buildAchievementGrid();
         refreshData();
-
+        loadAds();
         return view;
     }
 
@@ -62,6 +71,7 @@ public class AchievementFragment extends Fragment {
         labelCurrent = root.findViewById(R.id.label_current);
         textCurrentValue = root.findViewById(R.id.text_current_value);
         gridAchievements = root.findViewById(R.id.grid_achievements);
+        frAds = root.findViewById(R.id.frAds);
     }
 
     private void setupTabs() {
@@ -227,5 +237,38 @@ public class AchievementFragment extends Fragment {
         shareIntent.putExtra(Intent.EXTRA_TEXT, text);
         startActivity(Intent.createChooser(shareIntent, getString(R.string.share_via)));
     }
+
+    private void loadAds() {
+
+        Context safeContext = getContext();
+        if (safeContext == null) return;
+
+        Admob.getInstance().loadNativeAd(safeContext, getString(R.string.native_achievement), new NativeCallback() {
+
+            @Override
+            public void onNativeAdLoaded(NativeAd nativeAd) {
+                super.onNativeAdLoaded(nativeAd);
+
+                if (!isAdded() || getContext() == null) return;
+
+                LayoutInflater inflater = LayoutInflater.from(getContext());
+                NativeAdView adView = (NativeAdView) inflater.inflate(R.layout.layout_native_btn_bottom, null);
+
+                if (frAds == null) return;
+
+                frAds.removeAllViews();
+                frAds.addView(adView);
+                Admob.getInstance().pushAdsToViewCustom(nativeAd, adView);
+            }
+
+            @Override
+            public void onAdFailedToLoad() {
+                super.onAdFailedToLoad();
+                if (!isAdded() || frAds == null) return;
+                frAds.setVisibility(View.GONE);
+            }
+        });
+    }
+
 }
 

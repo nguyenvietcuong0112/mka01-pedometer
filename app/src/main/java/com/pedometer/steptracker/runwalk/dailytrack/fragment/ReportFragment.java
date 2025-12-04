@@ -1,7 +1,11 @@
 package com.pedometer.steptracker.runwalk.dailytrack.fragment;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +16,7 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.github.mikephil.charting.charts.LineChart;
@@ -21,6 +26,7 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
+import com.google.android.gms.ads.nativead.MediaView;
 import com.google.android.gms.ads.nativead.NativeAd;
 import com.google.android.gms.ads.nativead.NativeAdView;
 import com.mallegan.ads.callback.NativeCallback;
@@ -54,6 +60,23 @@ public class ReportFragment extends Fragment {
     private int currentMonthIndex;
     private View rootView;
 
+    private FrameLayout frAdsHomeTop;
+    private FrameLayout frAdsCollap;
+
+    private final Handler handler = new Handler(Looper.getMainLooper());
+    private Runnable delayedLoadExpandTask;
+
+    private Runnable loadTask = new Runnable() {
+        @Override
+        public void run() {
+            loadNativeExpnad();
+            handler.postDelayed(this, 10000);
+        }
+    };
+
+    private boolean isFirstLoad = true;
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.activity_details_report, container, false);
@@ -70,53 +93,11 @@ public class ReportFragment extends Fragment {
         loadMonthlyData();
         setupMonthNavigation();
         setupChart();
-        loadAds();
-        loadNativeBanner();
+
     }
 
-    private void loadNativeBanner() {
-        Admob.getInstance().loadNativeAd(requireContext(), getString(R.string.native_banner_daily_report), new NativeCallback() {
-            @Override
-            public void onNativeAdLoaded(NativeAd nativeAd) {
-                super.onNativeAdLoaded(nativeAd);
-                NativeAdView adView = (NativeAdView) LayoutInflater.from(requireContext()).inflate(R.layout.ad_native_admob_banner_1, null);
-                frAdsBanner.setVisibility(View.VISIBLE);
-                frAdsBanner.removeAllViews();
-                frAdsBanner.addView(adView);
-                Admob.getInstance().pushAdsToViewCustom(nativeAd, adView);
-            }
 
-            @Override
-            public void onAdFailedToLoad() {
-                super.onAdFailedToLoad();
-                frAdsBanner.setVisibility(View.GONE);
-            }
-        });
-    }
 
-    private void loadAds() {
-        Admob.getInstance().loadNativeAd(requireContext(), getString(R.string.native_daily_report), new NativeCallback() {
-            @Override
-            public void onNativeAdLoaded(NativeAd nativeAd) {
-                super.onNativeAdLoaded(nativeAd);
-                NativeAdView adView;
-                if (!SharePreferenceUtils.isOrganic(requireContext())) {
-                    adView = (NativeAdView) LayoutInflater.from(requireContext()).inflate(R.layout.layout_native_language_non_organic, null);
-                } else {
-                    adView = (NativeAdView) LayoutInflater.from(requireContext()).inflate(R.layout.layout_native_language, null);
-                }
-                frAds.removeAllViews();
-                frAds.addView(adView);
-                Admob.getInstance().pushAdsToViewCustom(nativeAd, adView);
-            }
-
-            @Override
-            public void onAdFailedToLoad() {
-                super.onAdFailedToLoad();
-                frAds.setVisibility(View.GONE);
-            }
-        });
-    }
 
     private void setupMonthNavigation() {
         tvCurrentMonth = rootView.findViewById(R.id.tv_current_month);
@@ -154,6 +135,9 @@ public class ReportFragment extends Fragment {
         frAds = rootView.findViewById(R.id.frAds);
         frAdsBanner = rootView.findViewById(R.id.fr_ads_banner);
         statisticSpinner = rootView.findViewById(R.id.statisticSpinner);
+        frAdsHomeTop = rootView.findViewById(R.id.frAdsHomeTop);
+        frAdsCollap = rootView.findViewById(R.id.frAdsCollap);
+
     }
 
     private void setupSpinners() {
@@ -309,6 +293,81 @@ public class ReportFragment extends Fragment {
         chart.invalidate();
     }
 
+    private void loadNativeCollap(@Nullable final Runnable onLoaded) {
+        if (!isAdded() || getContext() == null) return;
+
+        if (frAdsHomeTop != null) {
+            frAdsHomeTop.removeAllViews();
+        }
+
+        Admob.getInstance().loadNativeAd(requireContext(), getString(R.string.native_collap_home), new NativeCallback() {
+            @Override
+            public void onNativeAdLoaded(NativeAd nativeAd) {
+                if (getContext() == null || !isAdded() || nativeAd == null) {
+                    return;
+                }
+
+                NativeAdView adView = (NativeAdView) LayoutInflater.from(requireContext()).inflate(R.layout.layout_native_home_collap, null);
+                if (frAdsCollap != null) {
+                    frAdsCollap.removeAllViews();
+                    frAdsCollap.addView(adView);
+                    Admob.getInstance().pushAdsToViewCustom(nativeAd, adView);
+                }
+
+                if (onLoaded != null) {
+                    onLoaded.run();
+                }
+            }
+
+            @Override
+            public void onAdFailedToLoad() {
+                if (!isAdded() || getContext() == null) return;
+
+                if (frAdsCollap != null) {
+                    frAdsCollap.removeAllViews();
+                }
+
+                if (onLoaded != null) {
+                    onLoaded.run();
+                }
+            }
+        });
+    }
+
+    private void loadNativeExpnad() {
+        if (!isAdded()) return;
+        Context context = requireContext();
+
+        Admob.getInstance().loadNativeAd(context, getString(R.string.native_expand_home), new NativeCallback() {
+            @Override
+            public void onNativeAdLoaded(NativeAd nativeAd) {
+                if (!isAdded()) return;
+
+                Context context = requireContext();
+                NativeAdView adView = (NativeAdView) LayoutInflater.from(context).inflate(R.layout.layout_native_home_expnad, null);
+
+                frAdsHomeTop.removeAllViews();
+
+                MediaView mediaView = adView.findViewById(R.id.ad_media);
+                ImageView closeButton = adView.findViewById(R.id.close);
+                closeButton.setOnClickListener(v -> {
+                    mediaView.performClick();
+                });
+
+                Log.d("Truong", "onNativeAdLoaded: ");
+                frAdsHomeTop.addView(adView);
+                Admob.getInstance().pushAdsToViewCustom(nativeAd, adView);
+            }
+
+            @Override
+            public void onAdFailedToLoad() {
+                if (isAdded()) {
+                    frAdsHomeTop.removeAllViews();
+                }
+            }
+        });
+    }
+
     private void updateMonthlyDataDisplay(int month) {
         DatabaseHelper.MonthlyStepData monthlyData = databaseHelper.getMonthlyStatData(month, currentStatisticType);
         stepsText.setText(getString(R.string.monthly_steps_format, monthlyData.totalSteps));
@@ -320,7 +379,33 @@ public class ReportFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        loadAds();
+        if (!SharePreferenceUtils.isOrganic(requireContext())) {
+            if (isFirstLoad) {
+                loadNativeCollap(() -> {
+                    delayedLoadExpandTask = new Runnable() {
+                        @Override
+                        public void run() {
+                            loadNativeExpnad();
+                            isFirstLoad = false;
+                        }
+                    };
+                    handler.postDelayed(delayedLoadExpandTask, 1000);
+                });
+            } else {
+                loadNativeCollap(() -> {
+                    delayedLoadExpandTask = new Runnable() {
+                        @Override
+                        public void run() {
+                            loadNativeExpnad();
+                        }
+                    };
+                    handler.postDelayed(delayedLoadExpandTask, 10000);
+                });
+            }
+        } else {
+            frAdsCollap.removeAllViews();
+            frAdsHomeTop.removeAllViews();
+        }
     }
 }
 

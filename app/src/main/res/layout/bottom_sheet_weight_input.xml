@@ -4,7 +4,7 @@
     android:layout_height="wrap_content"
     android:background="@drawable/bg_bottom_sheet"
     android:orientation="vertical"
-    android:padding="@dimen/_20sdp">
+    android:paddingTop="@dimen/_20sdp">
 
     <TextView
         android:id="@+id/tvBottomSheetTitle"
@@ -12,6 +12,7 @@
         android:layout_height="wrap_content"
         android:fontFamily="@font/montserrat_bold"
         android:text="Current Weight"
+        android:paddingHorizontal="@dimen/_20sdp"
         android:textColor="@color/black"
         android:textSize="18sp" />
 
@@ -19,6 +20,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/_15sdp"
+        android:paddingHorizontal="@dimen/_20sdp"
         android:orientation="vertical">
 
         <TextView
@@ -62,8 +64,8 @@
                 android:layout_width="14dp"
                 android:layout_height="14dp"
                 android:layout_marginStart="@dimen/_5sdp"
-                android:src="@drawable/ic_next"
                 android:rotation="90"
+                android:src="@drawable/ic_next"
                 android:tint="#9E9E9E" />
         </LinearLayout>
     </LinearLayout>
@@ -72,6 +74,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/_15sdp"
+        android:paddingHorizontal="@dimen/_20sdp"
         android:orientation="vertical">
 
         <TextView
@@ -115,8 +118,8 @@
                 android:layout_width="14dp"
                 android:layout_height="14dp"
                 android:layout_marginStart="@dimen/_5sdp"
-                android:src="@drawable/ic_next"
                 android:rotation="90"
+                android:src="@drawable/ic_next"
                 android:tint="#9E9E9E" />
         </LinearLayout>
     </LinearLayout>
@@ -125,6 +128,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/_20sdp"
+        android:paddingHorizontal="@dimen/_20sdp"
         android:gravity="center"
         android:orientation="horizontal">
 
@@ -151,6 +155,8 @@
             android:textColor="#FFFFFF"
             android:textSize="16sp" />
     </LinearLayout>
+
+
 
 </LinearLayout>
 

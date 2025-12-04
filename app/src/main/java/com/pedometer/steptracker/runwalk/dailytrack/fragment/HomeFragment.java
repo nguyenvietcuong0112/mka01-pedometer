@@ -35,19 +35,24 @@ import android.graphics.Color;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.nativead.MediaView;
 import com.google.android.gms.ads.nativead.NativeAd;
 import com.google.android.gms.ads.nativead.NativeAdView;
+import com.mallegan.ads.callback.InterCallback;
 import com.mallegan.ads.callback.NativeCallback;
 import com.mallegan.ads.util.Admob;
 import com.pedometer.steptracker.runwalk.dailytrack.R;
 import com.pedometer.steptracker.runwalk.dailytrack.activity.MainActivity;
 import com.pedometer.steptracker.runwalk.dailytrack.activity.StepGoalActivity;
 import com.pedometer.steptracker.runwalk.dailytrack.activity.WeightActivity;
+import com.pedometer.steptracker.runwalk.dailytrack.activity.nativefull.ActivityFullCallback;
+import com.pedometer.steptracker.runwalk.dailytrack.activity.nativefull.ActivityLoadNativeFullV2;
 import com.pedometer.steptracker.runwalk.dailytrack.model.DatabaseHelper;
 import com.pedometer.steptracker.runwalk.dailytrack.model.WeightHistoryHelper;
 import com.pedometer.steptracker.runwalk.dailytrack.utils.ArcProgressView;
@@ -74,16 +79,8 @@ public class HomeFragment extends Fragment {
     private ArcProgressView arcView;
     private FrameLayout badgeStar;
 
-    private Handler handler = new Handler(Looper.getMainLooper());
     private boolean isFirstLoad = true;
 
-    private Runnable loadTask = new Runnable() {
-        @Override
-        public void run() {
-            loadNativeExpnad();
-            handler.postDelayed(this, 15000);
-        }
-    };
 
     private TextView stepCountText, targetText, remainingText;
     private TextView kcalText, timeText, distanceText;
@@ -114,13 +111,24 @@ public class HomeFragment extends Fragment {
     private TextView tvCurrentWeight, tvWeightGoal;
     private LinearLayout weightSection;
 
-    private FrameLayout frAds, frAdsBanner;
+    private FrameLayout frAds;
 
     private float[] gravity = new float[3];
     private float[] linear_acceleration = new float[3];
     private long lastStepTime = 0;
     private float[] lastValues = new float[PEAK_COUNT];
     private int valueIndex = 0;
+
+    private final Handler handler = new Handler(Looper.getMainLooper());
+    private Runnable delayedLoadExpandTask;
+
+    private Runnable loadTask = new Runnable() {
+        @Override
+        public void run() {
+            loadNativeExpnad();
+            handler.postDelayed(this, 10000);
+        }
+    };
 
     // Ads & utils
     private FrameLayout frAdsHomeTop;
@@ -178,7 +186,6 @@ public class HomeFragment extends Fragment {
         settingDailyStep = rootView.findViewById(R.id.settingsDailyStep);
 
         frAds = rootView.findViewById(R.id.frAds);
-        frAdsBanner = rootView.findViewById(R.id.fr_ads_banner);
         frAdsHomeTop = rootView.findViewById(R.id.frAdsHomeTop);
         frAdsCollap = rootView.findViewById(R.id.frAdsCollap);
 
@@ -240,9 +247,41 @@ public class HomeFragment extends Fragment {
 
     private void setupWeightSection() {
         if (weightSection != null) {
+
             weightSection.setOnClickListener(v -> {
-                Intent intent = new Intent(requireContext(), WeightActivity.class);
-                startActivity(intent);
+
+                if (!SharePreferenceUtils.isOrganic(requireActivity())) {
+                    Admob.getInstance().loadAndShowInter((AppCompatActivity) getContext(),getString(R.string.inter_steps), 0 , 30000, new InterCallback() {
+                        @Override
+                        public void onAdClosed() {
+                            super.onAdClosed();
+                            ActivityLoadNativeFullV2.open(getActivity(), getString(R.string.native_full_inter_steps), new ActivityFullCallback() {
+                                @Override
+                                public void onResultFromActivityFull() {
+                                    Intent intent = new Intent(requireContext(), WeightActivity.class);
+                                    startActivity(intent);
+                                }
+                            });
+                        }
+
+                        @Override
+                        public void onAdFailedToLoad(LoadAdError i) {
+                            super.onAdFailedToLoad(i);
+                            ActivityLoadNativeFullV2.open(getActivity(), getString(R.string.native_full_inter_steps), new ActivityFullCallback() {
+                                @Override
+                                public void onResultFromActivityFull() {
+                                    Intent intent = new Intent(requireContext(), WeightActivity.class);
+                                    startActivity(intent);
+                                }
+                            });
+                        }
+                    } );
+
+                } else {
+                    Intent intent = new Intent(requireContext(), WeightActivity.class);
+                    startActivity(intent);
+                }
+
             });
         }
         float prevCurrent = 0f;
@@ -310,36 +349,29 @@ public class HomeFragment extends Fragment {
     }
 
 
-    private void loadNativeBanner() {
-        Admob.getInstance().loadNativeAd(requireContext(), getString(R.string.native_banner_home), new NativeCallback() {
-            @Override
-            public void onNativeAdLoaded(NativeAd nativeAd) {
-                super.onNativeAdLoaded(nativeAd);
-                NativeAdView adView = (NativeAdView) LayoutInflater.from(requireContext()).inflate(R.layout.ad_native_admob_banner_1, null);
-                frAdsBanner.setVisibility(View.VISIBLE);
-                frAdsBanner.removeAllViews();
-                frAdsBanner.addView(adView);
-                Admob.getInstance().pushAdsToViewCustom(nativeAd, adView);
-            }
 
-            @Override
-            public void onAdFailedToLoad() {
-                super.onAdFailedToLoad();
-                frAdsBanner.setVisibility(View.GONE);
-            }
-        });
-    }
 
     private void loadNativeCollap(@Nullable final Runnable onLoaded) {
-        Log.d("Truowng", "loadNativeCollapA: ");
-        frAdsHomeTop.removeAllViews();
+        if (!isAdded() || getContext() == null) return;
+
+        if (frAdsHomeTop != null) {
+            frAdsHomeTop.removeAllViews();
+        }
+
         Admob.getInstance().loadNativeAd(requireContext(), getString(R.string.native_collap_home), new NativeCallback() {
             @Override
             public void onNativeAdLoaded(NativeAd nativeAd) {
+                if (getContext() == null || !isAdded() || nativeAd == null) {
+                    return;
+                }
+
                 NativeAdView adView = (NativeAdView) LayoutInflater.from(requireContext()).inflate(R.layout.layout_native_home_collap, null);
-                frAdsCollap.removeAllViews();
-                frAdsCollap.addView(adView);
-                Admob.getInstance().pushAdsToViewCustom(nativeAd, adView);
+                if (frAdsCollap != null) {
+                    frAdsCollap.removeAllViews();
+                    frAdsCollap.addView(adView);
+                    Admob.getInstance().pushAdsToViewCustom(nativeAd, adView);
+                }
+
                 if (onLoaded != null) {
                     onLoaded.run();
                 }
@@ -347,7 +379,12 @@ public class HomeFragment extends Fragment {
 
             @Override
             public void onAdFailedToLoad() {
-                frAdsCollap.removeAllViews();
+                if (!isAdded() || getContext() == null) return;
+
+                if (frAdsCollap != null) {
+                    frAdsCollap.removeAllViews();
+                }
+
                 if (onLoaded != null) {
                     onLoaded.run();
                 }
@@ -356,12 +393,14 @@ public class HomeFragment extends Fragment {
     }
 
     private void loadNativeExpnad() {
-        Log.d("Truong", "loadNativeCollapB: ");
+        if (!isAdded()) return;
         Context context = requireContext();
 
         Admob.getInstance().loadNativeAd(context, getString(R.string.native_expand_home), new NativeCallback() {
             @Override
             public void onNativeAdLoaded(NativeAd nativeAd) {
+                if (!isAdded()) return;
+
                 Context context = requireContext();
                 NativeAdView adView = (NativeAdView) LayoutInflater.from(context).inflate(R.layout.layout_native_home_expnad, null);
 
@@ -380,7 +419,9 @@ public class HomeFragment extends Fragment {
 
             @Override
             public void onAdFailedToLoad() {
-                frAdsHomeTop.removeAllViews();
+                if (isAdded()) {
+                    frAdsHomeTop.removeAllViews();
+                }
             }
         });
     }
@@ -865,12 +906,16 @@ public class HomeFragment extends Fragment {
             stopStepTracking();
         }
         saveCurrentData();
+        handler.removeCallbacks(loadTask);
+        if (delayedLoadExpandTask != null) {
+            handler.removeCallbacks(delayedLoadExpandTask);
+            delayedLoadExpandTask = null;
+        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        loadNativeBanner();
         loadTodayData();
         setupWeightSection();
         updateTargetText();
@@ -887,18 +932,30 @@ public class HomeFragment extends Fragment {
 
         if (!SharePreferenceUtils.isOrganic(requireContext())) {
             if (isFirstLoad) {
-                loadNativeCollap(() -> handler.postDelayed(() -> {
-                    loadNativeExpnad();
-                    handler.postDelayed(loadTask, 15000);
-                    isFirstLoad = false;
-                }, 1000));
+                loadNativeCollap(() -> {
+                    delayedLoadExpandTask = new Runnable() {
+                        @Override
+                        public void run() {
+                            loadNativeExpnad();
+                            isFirstLoad = false;
+                        }
+                    };
+                    handler.postDelayed(delayedLoadExpandTask, 1000);
+                });
             } else {
-                loadNativeCollap(null);
-                handler.postDelayed(loadTask, 15000);
+                loadNativeCollap(() -> {
+                    delayedLoadExpandTask = new Runnable() {
+                        @Override
+                        public void run() {
+                            loadNativeExpnad();
+                        }
+                    };
+                    handler.postDelayed(delayedLoadExpandTask, 10000);
+                });
             }
         } else {
-            frAdsHomeTop.removeAllViews();
             frAdsCollap.removeAllViews();
+            frAdsHomeTop.removeAllViews();
         }
     }
 
